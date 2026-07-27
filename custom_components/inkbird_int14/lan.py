@@ -1,6 +1,7 @@
 from __future__ import annotations
 
 import base64
+import hashlib
 import re
 from dataclasses import dataclass
 from typing import Any
@@ -19,6 +20,25 @@ from .const import (
 
 RAW_DP_IDS = {
     "103",
+    "109",
+    "110",
+    "116",
+    "122",
+    "123",
+    "124",
+    "125",
+    "126",
+    "127",
+    "128",
+    "129",
+    "131",
+}
+DIAGNOSTIC_DP_IDS = {
+    "101",
+    "102",
+    "103",
+    "104",
+    "106",
     "109",
     "110",
     "116",
@@ -118,6 +138,96 @@ def _normalize_dps(result: Any) -> dict[str, Any]:
         if key in RAW_DP_IDS:
             normalized[key] = _normalize_raw_value(normalized[key])
     return normalized
+
+
+def _diagnostic_dp_value(key: str, value: Any) -> dict[str, Any]:
+    """Summarize a DP without exposing arbitrary strings or nested payloads."""
+    if isinstance(value, bool):
+        return {"type": "bool", "value": value}
+    if isinstance(value, int):
+        return {"type": "int", "value": value}
+    if isinstance(value, float):
+        return {"type": "float", "value": value}
+    if value is None:
+        return {"type": "none", "value": None}
+
+    if isinstance(value, (bytes, bytearray)):
+        raw = bytes(value)
+        if key in DIAGNOSTIC_DP_IDS:
+            return {
+                "type": "bytes",
+                "encoding": "hex",
+                "length": len(raw),
+                "value_hex": raw.hex(),
+            }
+        return {
+            "type": "bytes",
+            "length": len(raw),
+            "sha256": hashlib.sha256(raw).hexdigest(),
+        }
+
+    if isinstance(value, str):
+        raw = value.encode("utf-8", errors="replace")
+        normalized = _normalize_raw_value(value) if key in RAW_DP_IDS else value
+        if key in DIAGNOSTIC_DP_IDS and isinstance(normalized, str) and len(normalized) % 2 == 0 and re.fullmatch(r"[0-9a-f]+", normalized):
+            return {
+                "type": "encoded_string",
+                "encoding": "hex",
+                "length": len(normalized) // 2,
+                "value_hex": normalized,
+            }
+        return {
+            "type": "string",
+            "length": len(value),
+            "sha256": hashlib.sha256(raw).hexdigest(),
+        }
+
+    if isinstance(value, (list, tuple, set, dict)):
+        return {"type": type(value).__name__, "item_count": len(value)}
+    return {"type": type(value).__name__}
+
+
+def _diagnostic_dps(result: Any) -> dict[str, dict[str, Any]]:
+    dps = _normalize_dps(result)
+    return {key: _diagnostic_dp_value(key, value) for key, value in sorted(dps.items())}
+
+
+def capture_lan_diagnostics(config: TuyaLanConfig) -> dict[str, Any]:
+    """Query Tuya LAN state without applying values or sending setting writes."""
+    device = _device(config)
+    status: Any = None
+    update: Any = None
+    status_error_type = None
+    update_error_type = None
+
+    try:
+        status = device.status(nowait=False)
+    except Exception as exc:  # noqa: BLE001 - only the exception type is exported
+        status_error_type = type(exc).__name__
+
+    if config.update_dps:
+        try:
+            update = device.updatedps(list(config.update_dps), nowait=False)
+        except Exception as exc:  # noqa: BLE001 - only the exception type is exported
+            update_error_type = type(exc).__name__
+
+    status_dps = _diagnostic_dps(status)
+    update_dps = _diagnostic_dps(update)
+    merged_keys = sorted(set(status_dps) | set(update_dps))
+    status_ok = isinstance(status, dict) and "Error" not in status and status_error_type is None
+    update_ok = isinstance(update, dict) and "Error" not in update and update_error_type is None if config.update_dps else None
+    return {
+        "status": "complete" if (status_ok or update_ok) else "failed",
+        "read_only": True,
+        "status_ok": status_ok,
+        "update_ok": update_ok,
+        "status_error_type": status_error_type,
+        "update_error_type": update_error_type,
+        "status_dps": status_dps,
+        "update_dps": update_dps,
+        "dp_count": len(merged_keys),
+        "dp_keys": merged_keys,
+    }
 
 
 def fetch_lan_dps(config: TuyaLanConfig) -> tuple[dict[str, Any], dict[str, Any]]:

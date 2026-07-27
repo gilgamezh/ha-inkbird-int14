@@ -145,6 +145,14 @@ The station firmware may not return every DP on every LAN poll. Battery and stat
 
 `Auto` mode prefers Tuya LAN for normal polling. If you need to validate BLE reachability or a BLE-only command while Wi-Fi remains connected, temporarily select `BLE only`, run the snapshot or command, then return to `Auto`.
 
+## INT-14S-BW Is Not The INT-14-BW LAN Profile
+
+Normal Tuya LAN support is currently validated only for the INT-14-BW-compatible profiles listed in the model table. Do not select `INT-14-BW` for an INT-14S-BW just to make the LAN transport available.
+
+The connection may succeed, but the two models do not use the same temperature payload layout. Symptoms include impossible values such as hundreds or thousands of degrees and only two temperature entities per physical probe. These are decoding errors, not real temperatures and not calibration problems. Do not compensate for them with calibration or setting writes.
+
+The `v0.2.6-beta.6` prerelease adds a separate **Capture Read-Only LAN Diagnostics** button for the real `INT-14S-BW` profile. It collects sanitized raw DP evidence without applying those values to Home Assistant entities and without enabling setting writes. See `docs/lan_diagnostics.md`.
+
 ## Privacy
 
 Use placeholders in logs and issues:

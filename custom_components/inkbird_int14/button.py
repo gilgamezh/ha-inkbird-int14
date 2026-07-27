@@ -26,6 +26,7 @@ async def async_setup_entry(
     if runtime.profile.key == MODEL_INT14S_BW:
         entities.extend(
             (
+                Int14LanDiagnosticsButton(runtime, entry.data[CONF_NAME]),
                 Int14UnitWriteValidationButton(runtime, entry.data[CONF_NAME], "C"),
                 Int14UnitWriteValidationButton(runtime, entry.data[CONF_NAME], "F"),
             )
@@ -100,6 +101,31 @@ class Int14AuthenticatedBleDiagnosticsButton(ButtonEntity):
 
     async def async_press(self) -> None:
         await self.runtime.request_authenticated_ble_diagnostics()
+
+
+class Int14LanDiagnosticsButton(ButtonEntity):
+    """Read INT-14S Tuya DPs without enabling its unsupported LAN runtime."""
+
+    _attr_has_entity_name = True
+    _attr_name = "Capture Read-Only LAN Diagnostics"
+    _attr_entity_category = EntityCategory.DIAGNOSTIC
+
+    def __init__(self, runtime, base_name: str) -> None:
+        self.runtime = runtime
+        self._base_name = base_name
+        self._attr_unique_id = f"{runtime.address}_capture_read_only_lan_diagnostics"
+
+    @property
+    def device_info(self):
+        return {
+            "identifiers": {(DOMAIN, self.runtime.address.upper())},
+            "name": self._base_name,
+            "manufacturer": "Inkbird",
+            "model": self.runtime.device_model,
+        }
+
+    async def async_press(self) -> None:
+        await self.runtime.request_lan_diagnostics()
 
 
 class Int14UnitWriteValidationButton(ButtonEntity):

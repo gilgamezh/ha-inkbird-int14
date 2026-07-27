@@ -26,7 +26,7 @@ from .const import (
     TRANSPORT_MODES,
     WRITE_UUID,
 )
-from .lan import TuyaLanConfig, fetch_lan_dps, set_lan_dps
+from .lan import TuyaLanConfig, capture_lan_diagnostics, fetch_lan_dps, set_lan_dps
 from .models import (
     AUTH_MODE_GATT_POLL,
     AUTH_MODE_SCAN_ONLY,
@@ -394,6 +394,38 @@ class Int14Runtime:
                 self._notify_listeners()
                 return
             await self._request_init_with_fresh_connection()
+
+    async def request_lan_diagnostics(self) -> None:
+        """Capture raw INT-14S Tuya DPs without applying them to entities."""
+        self.data["lan_debug_last_run_epoch_s"] = int(time.time())
+        self.data["lan_debug_status"] = "starting"
+        self.data["lan_debug_last_error"] = None
+        self.data["lan_debug_last_error_type"] = None
+        self.data["lan_debug_capture"] = {}
+        self._notify_listeners()
+
+        if self.profile.key != MODEL_INT14S_BW:
+            self.data["lan_debug_status"] = "not_available_for_profile"
+            self.data["lan_debug_last_error"] = "Read-only LAN diagnostics are currently limited to INT-14S-BW"
+            self._notify_listeners()
+            return
+        if self.lan_config is None or not self.lan_config.is_complete:
+            self.data["lan_debug_status"] = "missing_configuration"
+            self.data["lan_debug_last_error"] = "Host, device ID and local key are required"
+            self._notify_listeners()
+            return
+
+        try:
+            capture = await self.hass.async_add_executor_job(capture_lan_diagnostics, self.lan_config)
+            self.data["lan_debug_capture"] = capture
+            self.data["lan_debug_status"] = capture.get("status", "complete")
+        except Exception as exc:  # noqa: BLE001
+            self.data["lan_debug_status"] = "failed"
+            self.data["lan_debug_last_error_type"] = type(exc).__name__
+            self.data["lan_debug_last_error"] = "Read-only LAN diagnostic failed; check the integration logs"
+            _LOGGER.warning("INT-14S read-only LAN diagnostic failed (%s)", type(exc).__name__)
+        finally:
+            self._notify_listeners()
 
     async def request_ble_diagnostics(self) -> None:
         """Inspect an eligible profile over GATT without sending Inkbird commands."""

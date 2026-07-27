@@ -17,7 +17,7 @@ The integration supports local BLE, local Tuya LAN where the model and DP map ha
 
 ## Release State
 
-The latest stable release is `v0.2.5`. The `v0.2.6` prerelease line adds the community-validated INT-12E-BW connected BLE path and guarded INT-14S-BW unit-write validation.
+The latest stable release is `v0.2.5`. The `v0.2.6` prerelease line adds the community-validated INT-12E-BW connected BLE path, guarded INT-14S-BW unit-write validation and a read-only INT-14S Tuya DP diagnostic capture.
 
 Do not describe prerelease behavior as part of the latest stable release. INT-14S-BW's normal runtime remains read-only; its Celsius/Fahrenheit validation buttons are diagnostic, disabled by default and not proof of general write support.
 
@@ -25,7 +25,7 @@ Do not describe prerelease behavior as part of the latest stable release. INT-14
 
 INT-14-BW remains the only profile with the full tested combination of BLE snapshots, Tuya LAN polling and mapped local writes.
 
-INT-14S-BW exposes 20 mapped temperatures and battery readings over read-only BLE. Tuya LAN, cloud, normal writes and unverified protocol-state entities remain disabled.
+INT-14S-BW exposes 20 mapped temperatures and battery readings over read-only BLE. Its diagnostic-only Tuya status/DP refresh capture does not apply values or enable the LAN runtime. Normal Tuya LAN, cloud, normal writes and unverified protocol-state entities remain disabled.
 
 INT-12E-BW exposes ten mapped temperatures, station temperature and battery readings over read-only BLE. Notifications are applied immediately; configurable direct reads are only a fallback. The device may close sessions after about 30 seconds with reason `0x13`, and the integration reconnects automatically. Food 4 is confirmed as the tip channel on both probes; Food 1-3 still need physical mapping.
 

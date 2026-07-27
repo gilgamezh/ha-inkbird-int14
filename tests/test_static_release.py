@@ -149,6 +149,30 @@ def test_int14s_unit_write_validation_is_opt_in_and_narrow() -> None:
         assert forbidden_builder not in validation_block
 
 
+def test_int14s_lan_diagnostics_never_apply_or_write_dps() -> None:
+    component = ROOT / "custom_components" / "inkbird_int14"
+    lan = (component / "lan.py").read_text(encoding="utf-8")
+    runtime = (component / "runtime.py").read_text(encoding="utf-8")
+    models = (component / "models.py").read_text(encoding="utf-8")
+    capture_block = lan.split("def capture_lan_diagnostics", 1)[1].split("def fetch_lan_dps", 1)[0]
+    runtime_block = runtime.split("    async def request_lan_diagnostics", 1)[1].split(
+        "    async def request_ble_diagnostics",
+        1,
+    )[0]
+    int14s_profile = models.split("MODEL_INT14S_BW:", 1)[1].split("MODEL_INT14P_BW:", 1)[0]
+
+    assert "device.status" in capture_block
+    assert "device.updatedps" in capture_block
+    assert "set_value" not in capture_block
+    assert "set_multiple_values" not in capture_block
+    assert "set_lan_dps" not in runtime_block
+    assert "apply_lan_dps" not in runtime_block
+    assert "apply_cloud_dps" not in runtime_block
+    assert "MODEL_INT14S_BW" in runtime_block
+    assert "supports_lan=False" in int14s_profile
+    assert 'write_support="not_supported"' in int14s_profile
+
+
 def test_int12e_continuous_gatt_polling_is_scoped_and_configurable() -> None:
     component = ROOT / "custom_components" / "inkbird_int14"
     runtime = (component / "runtime.py").read_text(encoding="utf-8")

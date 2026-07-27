@@ -167,7 +167,7 @@ Noisy raw diagnostics and fragile fields that are often unknown are marked diagn
 
 The profile diagnostics include physical probe count, expected temperature channel count and mapped live temperature channel count. Cataloged profiles with no validated parser mapping do not create placeholder temperature entities for every expected channel.
 
-Cataloged profiles include passive BLE inspection. INT-14S-BW retains a separate authenticated diagnostic capture and guarded prerelease write-validation controls for protocol work. Those controls are not the normal settings layer and remain disabled by default. See `docs/ble_diagnostics.md` before testing or sharing a sanitized capture.
+Cataloged profiles include passive BLE inspection. INT-14S-BW retains separate BLE diagnostics, a read-only Tuya LAN DP capture and guarded prerelease write-validation controls for protocol work. These tools do not enable its normal LAN runtime, and the write-validation controls remain disabled by default. See `docs/ble_diagnostics.md` and `docs/lan_diagnostics.md` before testing or sharing a sanitized capture.
 
 Battery values remain numeric when a fresh INT-14 battery snapshot exists. Repeated 100% probe reports are flagged through `Battery Report Quality` and suspect binary sensors instead of hiding the battery value. Local testing showed that the station can still report all probe batteries as 100% after successful BLE authentication, so those values should be treated as station-reported rather than independently verified probe fuel gauges.
 
@@ -214,6 +214,7 @@ See `custom_components/inkbird_int14/services.yaml`.
 ## Documentation
 
 - `docs/lan_setup.md`
+- `docs/lan_diagnostics.md`
 - `docs/model_profiles.md`
 - `docs/int12e_dashboard.md`
 - `docs/cloud_history_experimental.md`
@@ -247,7 +248,7 @@ example-local-key
 - Cloud live data, cloud battery/state and cloud writes are not supported.
 - Model support is profile-specific. A known probe layout does not by itself mean that live parsing or writes are supported.
 - Cataloged multi-sensor profiles may show an expected channel layout without exposing live temperature entities.
-- INT-14S-BW currently supports BLE temperature/battery readings only. Tuya LAN, cloud history, settings writes and protocol-state entities such as charging/paired/timer remain disabled until their model-specific frames are validated.
+- INT-14S-BW currently supports BLE temperature/battery readings only. Its prerelease read-only LAN diagnostic can capture raw Tuya DPs for protocol mapping, but it does not apply them to entities or enable normal LAN polling. Tuya LAN, cloud history, settings writes and protocol-state entities such as charging/paired/timer remain disabled until their model-specific frames are validated.
 - INT-12E-BW currently supports read-only BLE temperature/battery updates. Valid notifications are applied immediately; fallback direct GATT reads run every 10 seconds by default and can be configured from 5 to 300 seconds. The station may end sessions after about 30 seconds, after which the integration reconnects automatically. Tuya LAN, cloud, writes and protocol-state entities remain disabled.
 
 ## Alternatives
