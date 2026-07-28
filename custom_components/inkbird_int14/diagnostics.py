@@ -61,6 +61,7 @@ RUNTIME_DIAGNOSTIC_KEYS = {
     "int14s_lan_payload_length",
     "probe_count",
     "probe_layout_summary",
+    "stale_entity_registry_entries_removed",
     "temperature_channel_count",
     "transport_mode",
 }

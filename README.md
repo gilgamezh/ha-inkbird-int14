@@ -37,6 +37,8 @@ Public HACS custom repository for the modern INT family. INT-14-BW is the tested
 
 The latest stable release is `v0.2.5`. INT-12E-BW support, experimental read-only INT-14S-BW Tuya LAN temperatures and the guarded INT-14S unit-write experiment are currently available only in the `v0.2.6` prerelease line.
 
+Starting with `v0.2.6-beta.8`, reloading a reconfigured entry removes known stale entities that belong to an incompatible previous model profile. This is intentionally narrow: valid temperature, battery, transport and diagnostic entities keep their existing unique IDs.
+
 Repository:
 
 ```text

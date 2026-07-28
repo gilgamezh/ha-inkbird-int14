@@ -1,10 +1,13 @@
 from __future__ import annotations
 
+import logging
+
 import homeassistant.helpers.config_validation as cv
 import voluptuous as vol
 from homeassistant.config_entries import ConfigEntry
 from homeassistant.core import HomeAssistant, ServiceCall
 from homeassistant.exceptions import HomeAssistantError
+from homeassistant.helpers import entity_registry as er
 
 from .cloud import build_cloud_history_config_from_sources
 from .const import (
@@ -19,6 +22,7 @@ from .const import (
     DOMAIN,
     TRANSPORT_MODE_AUTO,
 )
+from .entity_cleanup import obsolete_profile_unique_ids
 from .lan import build_lan_config_from_sources
 from .protocol import (
     build_calibration_command,
@@ -32,6 +36,8 @@ from .protocol import (
     build_unit_command,
 )
 from .runtime import Int14Runtime
+
+_LOGGER = logging.getLogger(__name__)
 
 PLATFORMS = ["sensor", "binary_sensor", "button", "select", "number"]
 CONFIG_SCHEMA = cv.config_entry_only_config_schema(DOMAIN)
@@ -454,6 +460,21 @@ async def async_setup_entry(hass: HomeAssistant, entry: ConfigEntry) -> bool:
         CONF_REQUEST_INIT_ON_CONNECT,
         entry.data.get(CONF_REQUEST_INIT_ON_CONNECT, True),
     )
+    registry = er.async_get(hass)
+    obsolete_ids = {unique_id.casefold() for unique_id in obsolete_profile_unique_ids(runtime.address, runtime.profile)}
+    removed_count = 0
+    for entity_entry in er.async_entries_for_config_entry(registry, entry.entry_id):
+        if entity_entry.unique_id.casefold() not in obsolete_ids:
+            continue
+        registry.async_remove(entity_entry.entity_id)
+        removed_count += 1
+    runtime.data["stale_entity_registry_entries_removed"] = removed_count
+    if removed_count:
+        _LOGGER.info(
+            "Removed %s entity registry entries incompatible with profile %s",
+            removed_count,
+            runtime.profile.key,
+        )
     hass.data.setdefault(DOMAIN, {})[entry.entry_id] = runtime
     await hass.config_entries.async_forward_entry_setups(entry, PLATFORMS)
     runtime.start()

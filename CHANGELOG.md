@@ -5,6 +5,14 @@
 - Mark INT-12E-BW BLE temperature/battery transport as community validated after stable real-device notification, fallback-read and reconnect testing.
 - Rename the polling option to `BLE fallback direct-read interval`, clarifying that valid BLE notifications can update entities more frequently than the configured fallback cadence.
 
+## 0.2.6-beta.8
+
+- Confirm experimental read-only INT-14S-BW Tuya LAN temperature polling from a real Home Assistant beta.7 report.
+- Remove only known entity-registry entries that are incompatible with the currently selected model profile.
+- Clean up stale INT-14-BW internal-temperature, target, timer, calibration and protocol-state entities after the same config entry is reconfigured as INT-14S-BW.
+- Preserve valid temperature, battery, transport and diagnostic entities, including customized entity IDs.
+- Report the cleanup count in downloaded integration diagnostics.
+
 ## 0.2.6-beta.7
 
 - Add experimental read-only Tuya LAN temperatures for INT-14S-BW from community hardware validation of DP109.
