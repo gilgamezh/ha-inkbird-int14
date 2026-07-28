@@ -147,11 +147,11 @@ The station firmware may not return every DP on every LAN poll. Battery and stat
 
 ## INT-14S-BW Is Not The INT-14-BW LAN Profile
 
-Normal Tuya LAN support is currently validated only for the INT-14-BW-compatible profiles listed in the model table. Do not select `INT-14-BW` for an INT-14S-BW just to make the LAN transport available.
+Do not select `INT-14-BW` for an INT-14S-BW just to make the LAN transport available.
 
 The connection may succeed, but the two models do not use the same temperature payload layout. Symptoms include impossible values such as hundreds or thousands of degrees and only two temperature entities per physical probe. These are decoding errors, not real temperatures and not calibration problems. Do not compensate for them with calibration or setting writes.
 
-The `v0.2.6-beta.6` prerelease adds a separate **Capture Read-Only LAN Diagnostics** button for the real `INT-14S-BW` profile. It collects sanitized raw DP evidence without applying those values to Home Assistant entities and without enabling setting writes. See `docs/lan_diagnostics.md`.
+The beta.6 read-only diagnostic confirmed the model-specific layout. `v0.2.6-beta.7` enables experimental read-only INT-14S DP109 temperature polling under the correct `INT-14S-BW` profile. The parser verifies the 55-byte length and CRC before updating temperatures. No INT-14S LAN writes are enabled, and unvalidated state, battery, target, timer and calibration DPs are ignored. See `docs/lan_diagnostics.md`.
 
 ## Privacy
 

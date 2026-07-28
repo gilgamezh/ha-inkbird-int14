@@ -1,20 +1,30 @@
-# INT-14S-BW Read-Only LAN Diagnostics
+# INT-14S-BW Read-Only LAN
 
 INT-14S-BW uses a different Tuya temperature payload layout from INT-14-BW. A successful LAN connection does not make the INT-14-BW decoder compatible with it.
 
 If an INT-14S is configured with the INT-14-BW profile, Home Assistant may show values such as 800 C, negative hundreds of degrees or a base temperature in the thousands. It may also create only two temperature channels per probe instead of the expected five. Those values are parser mismatch artifacts. They are not real readings and must not be corrected with calibration.
 
-## Safe Test Procedure
+## What Was Validated
 
-This diagnostic is available in the `v0.2.6-beta.6` prerelease:
+The beta.6 read-only diagnostic captured INT-14S DP109 from real hardware. It contains:
 
-1. Install the prerelease through HACS and restart Home Assistant.
+- four 13-byte probe blocks;
+- two-byte station temperature;
+- one trailing CRC-8/ATM byte, using polynomial `0x07` and initial value `0x00`.
+
+The first 54 bytes use the same field order, scales and unavailable-probe sentinels as the community-validated BLE FF01 frame. The submitted LAN and BLE readings matched value for value.
+
+## Testing Beta.7
+
+`v0.2.6-beta.7` enables experimental read-only Tuya LAN temperatures:
+
+1. Install beta.7 through HACS and restart Home Assistant.
 2. Select the correct `INT-14S-BW` model profile.
 3. Enter the station host/IP, device ID, local key and protocol version in the integration options.
-4. Keep normal transport on `BLE only` or `Auto`. INT-14S normal LAN remains disabled either way.
-5. Wake the station and press **Capture Read-Only LAN Diagnostics** once.
-6. Wait about 15 seconds.
-7. Download the integration diagnostics from Home Assistant.
+4. Select `Wi-Fi LAN only` for a clear LAN-only test, or leave `Auto` to prefer the configured LAN path.
+5. Confirm that station temperature and all five channels of each active probe remain plausible.
+6. Dock or undock one probe and confirm its five temperature entities become unavailable or available together.
+7. Download the integration diagnostics and check `int14s_lan_crc8_valid`.
 8. Inspect the file before sharing it, then attach the sanitized JSON to the existing INT-14S validation Discussion.
 
 Discussion:
@@ -28,7 +38,7 @@ The capture performs the same class of local Tuya state queries used for polling
 - one status request;
 - one requested-DP refresh.
 
-It does not call the setting-write functions, does not apply the returned values to Home Assistant entities and does not turn on the unsupported INT-14S LAN runtime.
+The diagnostic button does not call setting-write functions and does not apply its captured values to Home Assistant entities. The separate beta.7 polling path applies only DP109 after validating its exact length and CRC.
 
 ## What It Records
 
@@ -44,4 +54,6 @@ The capture does not include the configured host, device ID or local key. Home A
 
 ## Current Boundary
 
-This tool is for protocol mapping, not normal operation. INT-14S remains supported through read-only BLE until its Tuya DP meanings, scales, sentinels and state fields have been validated from controlled captures. LAN writes remain blocked.
+Only INT-14S DP109 temperatures are enabled over LAN. Battery, charging, connection, alarm, timer, target, preset, calibration, display and sound DPs are not mapped by this parser.
+
+All normal INT-14S writes remain blocked. The disabled-by-default BLE C/F validation buttons are a separate protocol experiment and are not enabled by selecting LAN.

@@ -11,7 +11,7 @@ Modern Inkbird probes are not always one probe equals one temperature. Some prob
 | `int14_bw` | `INT-14-BW` | 4 | 8 | 8 | yes | yes | DP109 read-only | tested |
 | `int14_bw_wh` | `INT-14-BW_WH` | 4 | 8 | 8 | yes | yes | DP109 read-only | experimental |
 | `ing14` | `ING14` | 4 | 8 | 8 | yes | yes | DP109 read-only | experimental |
-| `int14s_bw` | `INT-14S-BW` | 4 | 20 | 20 | yes | no | no | community validated, read-only |
+| `int14s_bw` | `INT-14S-BW` | 4 | 20 | 20 | yes | DP109 read-only (beta.7) | no | community validated, read-only |
 | `int14p_bw` | `INT-14P-BW` | 4 | 8 | 8 | yes | yes | DP109 read-only | experimental |
 | `int12_bw` | `INT-12-BW` | 2 | 4 | 4 | yes | yes | DP109 read-only | experimental |
 | `int12i_bw` | `INT-12I-BW` | 2 | 4 | 4 | yes | yes | DP109 read-only | experimental |
@@ -84,9 +84,11 @@ A community beta.2 capture confirmed the INT-14S-BW FF00 GATT family, successful
 
 The four blocks are followed by station temperature in Fahrenheit tenths. Home Assistant exposes the 20 physical temperature channels (`Food 1-4` and `Ambient` per probe). The separate Internal value is retained as diagnostic runtime data and is not counted as a sixth physical sensor.
 
-This profile is community validated and read-only. BLE temperature and battery snapshots are enabled, but normal Tuya LAN polling, cloud history and all setting controls remain disabled. Charging, connected, paired, timer, alarm, Wi-Fi, sound and mute entities are also hidden because the INT-14S protocol-state frame is not mapped yet. Its snapshot path omits clock synchronization and sends only authentication plus read queries. The passive and authenticated BLE diagnostic buttons remain available for follow-up captures.
+This profile is community validated and read-only. BLE temperature and battery snapshots are enabled. The `v0.2.6-beta.7` prerelease also enables experimental read-only Tuya LAN temperatures from DP109. Cloud history and all normal setting controls remain disabled. Charging, connected, paired, timer, alarm, Wi-Fi, sound and mute entities are also hidden because the INT-14S protocol-state fields are not mapped yet. Its BLE snapshot path omits clock synchronization and sends only authentication plus read queries. The passive and authenticated BLE diagnostic buttons remain available for follow-up captures.
 
-The `v0.2.6-beta.6` prerelease also provides an INT-14S-only read-only LAN diagnostic. It issues Tuya status/DP refresh queries and stores a sanitized DP summary in the Home Assistant diagnostics download. It never feeds those values to the INT-14-BW parser and does not enable normal LAN transport or writes. Selecting the INT-14-BW profile for an INT-14S can otherwise produce plausible-looking battery data alongside impossible temperatures because DP109 has a different model-specific layout.
+The beta.6 diagnostic established that INT-14S DP109 contains the same 54-byte multisensor layout as the validated BLE FF01 value, followed by CRC-8/ATM. The LAN and BLE temperatures in the submitted Home Assistant diagnostics matched value for value. Beta.7 therefore routes INT-14S through a dedicated parser, verifies the CRC and only then updates the 20 temperature entities. It does not reuse the INT-14-BW parser. Selecting the INT-14-BW profile for an INT-14S can otherwise produce plausible-looking battery data alongside impossible temperatures.
+
+Only DP109 temperatures are mapped. DP102, DP104, battery/state, target, timer, alarm, calibration and every LAN write remain intentionally untouched.
 
 `INT-11I-B` is different from the INT-14-BW station profile. A community report from Dmitry/dskudrin validated it as a connectable GATT-poll device: `ff01` exposes one probe temperature as little-endian Fahrenheit hundredths, and `2a19` exposes two battery bytes, base/booster first and probe second. Writes remain disabled for this profile until command behavior is validated on hardware.
 

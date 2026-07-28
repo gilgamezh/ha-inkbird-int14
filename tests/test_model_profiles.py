@@ -163,7 +163,7 @@ def test_int14s_ble_read_path_is_community_validated_and_write_blocked() -> None
     assert profile.has_live_runtime_data is True
     assert profile.live_temperature_channel_count == 20
     assert profile.write_support == "not_supported"
-    assert profile.supports_lan is False
+    assert profile.supports_lan is True
     assert profile.supports_cloud_history is False
     assert profile.supports_protocol_state is False
     assert [channel.data_key for channel in profile.probe_layout[0].live_temperature_channels] == [

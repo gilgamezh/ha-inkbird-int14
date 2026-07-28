@@ -1,6 +1,6 @@
 # Release Audit
 
-Last reviewed: 2026-07-15
+Last reviewed: 2026-07-28
 
 ## Public Positioning
 
@@ -17,7 +17,7 @@ The integration supports local BLE, local Tuya LAN where the model and DP map ha
 
 ## Release State
 
-The latest stable release is `v0.2.5`. The `v0.2.6` prerelease line adds the community-validated INT-12E-BW connected BLE path, guarded INT-14S-BW unit-write validation and a read-only INT-14S Tuya DP diagnostic capture.
+The latest stable release is `v0.2.5`. The `v0.2.6` prerelease line adds the community-validated INT-12E-BW connected BLE path, guarded INT-14S-BW unit-write validation and experimental read-only INT-14S Tuya LAN temperatures.
 
 Do not describe prerelease behavior as part of the latest stable release. INT-14S-BW's normal runtime remains read-only; its Celsius/Fahrenheit validation buttons are diagnostic, disabled by default and not proof of general write support.
 
@@ -25,7 +25,7 @@ Do not describe prerelease behavior as part of the latest stable release. INT-14
 
 INT-14-BW remains the only profile with the full tested combination of BLE snapshots, Tuya LAN polling and mapped local writes.
 
-INT-14S-BW exposes 20 mapped temperatures and battery readings over read-only BLE. Its diagnostic-only Tuya status/DP refresh capture does not apply values or enable the LAN runtime. Normal Tuya LAN, cloud, normal writes and unverified protocol-state entities remain disabled.
+INT-14S-BW exposes 20 mapped temperatures and battery readings over read-only BLE. Beta.7 adds experimental read-only Tuya LAN temperatures from CRC-validated DP109. LAN battery/state/settings DPs, cloud, normal writes and unverified protocol-state entities remain disabled.
 
 INT-12E-BW exposes ten mapped temperatures, station temperature and battery readings over read-only BLE. Notifications are applied immediately; configurable direct reads are only a fallback. The device may close sessions after about 30 seconds with reason `0x13`, and the integration reconnects automatically. Food 4 is confirmed as the tip channel on both probes; Food 1-3 still need physical mapping.
 
@@ -66,11 +66,12 @@ Run these checks again immediately before tagging a release:
 - `trufflehog filesystem . --no-update --fail --no-verification`
 - cache audit for `.pytest_cache`, `.ruff_cache`, `__pycache__`, `*.pyc` and `*.pyo`
 
-For this 2026-07-15 review, Ruff format/check, compileall and all 36 tests passed. Gitleaks and TruffleHog reported no secrets. Detect-secrets reported eight expected keyword matches for the `cloud_api_key` and `cloud_api_secret` field names in constants and translations; no credential values were present. The manual privacy scan found only documented placeholder addresses. No test or bytecode cache remains in the repository.
+For this 2026-07-28 review, Ruff format/check, compileall and all 43 tests passed. Gitleaks and TruffleHog reported no secrets. Detect-secrets reported eight expected keyword matches for the `cloud_api_key` and `cloud_api_secret` field names in constants and translations; no credential values were present. The submitted INT-14S diagnostic was also checked before protocol analysis: host, BLE address, device ID and local key were redacted. No test or bytecode cache remains in the repository.
 
 ## Remaining Risks
 
 - INT-12E-BW needs a controlled physical mapping for Food 1-3.
+- INT-14S-BW read-only LAN temperatures are validated from one real-device capture and still need a beta.7 runtime report across reconnect and dock/undock changes.
 - INT-14S-BW unit write validation is awaiting a real-device prerelease report; other writes remain blocked.
 - INT-11I-B support is based on limited community hardware validation.
 - Tuya local keys must be obtained and protected by each device owner.

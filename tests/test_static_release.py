@@ -169,8 +169,32 @@ def test_int14s_lan_diagnostics_never_apply_or_write_dps() -> None:
     assert "apply_lan_dps" not in runtime_block
     assert "apply_cloud_dps" not in runtime_block
     assert "MODEL_INT14S_BW" in runtime_block
-    assert "supports_lan=False" in int14s_profile
+    assert "supports_lan=True" in int14s_profile
     assert 'write_support="not_supported"' in int14s_profile
+
+
+def test_int14s_live_lan_path_uses_dedicated_read_only_parser() -> None:
+    component = ROOT / "custom_components" / "inkbird_int14"
+    runtime = (component / "runtime.py").read_text(encoding="utf-8")
+    protocol = (component / "protocol.py").read_text(encoding="utf-8")
+    apply_lan_block = runtime.split("    def apply_lan_dps", 1)[1].split("    def _notification", 1)[0]
+    parser_block = protocol.split("def parse_int14s_lan_dps", 1)[1].split("def parse_int11i_temperature_payload", 1)[0]
+
+    assert "MODEL_INT14S_BW" in apply_lan_block
+    assert "parse_int14s_lan_dps" in apply_lan_block
+    assert "parse_cloud_dps" in apply_lan_block
+    assert "crc8_atm" in parser_block
+    assert '"109"' in parser_block
+    assert "parse_multisensor_temperature_payload" in parser_block
+    for forbidden_parser in (
+        "parse_battery_payload",
+        "parse_calibration_payload",
+        "parse_pre_alarm_payload",
+        "parse_state_payload",
+        "parse_target_payload",
+        "parse_timer_payload",
+    ):
+        assert forbidden_parser not in parser_block
 
 
 def test_int12e_continuous_gatt_polling_is_scoped_and_configurable() -> None:

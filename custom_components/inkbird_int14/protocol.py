@@ -330,6 +330,66 @@ def parse_multisensor_temperature_payload(raw: bytes, probe_count: int) -> dict[
     }
 
 
+def crc8_atm(raw: bytes) -> int:
+    """Return CRC-8/ATM (poly 0x07, init 0x00) used by INT-14S LAN DP109."""
+    crc = 0
+    for byte in raw:
+        crc ^= byte
+        for _ in range(8):
+            crc = ((crc << 1) ^ 0x07) & 0xFF if crc & 0x80 else (crc << 1) & 0xFF
+    return crc
+
+
+def parse_int14s_lan_dps(dps: Mapping[str, Any], probe_count: int = 4) -> dict[str, Any]:
+    """Decode only the community-validated read-only INT-14S LAN temperature DP."""
+    result: dict[str, Any] = {
+        "frames": [],
+        "dp_keys": sorted(str(key) for key in dps.keys()),
+        "int14s_lan_payload_length": None,
+        "int14s_lan_crc8_received": None,
+        "int14s_lan_crc8_calculated": None,
+        "int14s_lan_crc8_valid": None,
+        "int14s_lan_parse_error": None,
+    }
+    if dps.get("109") is None:
+        return result
+
+    try:
+        raw = _cloud_hex(dps["109"])
+    except (TypeError, ValueError):
+        result["int14s_lan_parse_error"] = "invalid_hex"
+        return result
+
+    result["int14s_lan_payload_length"] = len(raw)
+    expected_length = probe_count * 13 + 3
+    if len(raw) != expected_length:
+        result["int14s_lan_parse_error"] = "unexpected_length"
+        return result
+
+    payload = raw[:-1]
+    received_crc = raw[-1]
+    calculated_crc = crc8_atm(payload)
+    result["int14s_lan_crc8_received"] = received_crc
+    result["int14s_lan_crc8_calculated"] = calculated_crc
+    result["int14s_lan_crc8_valid"] = received_crc == calculated_crc
+    if received_crc != calculated_crc:
+        result["int14s_lan_parse_error"] = "crc_mismatch"
+        return result
+
+    current = parse_multisensor_temperature_payload(payload, probe_count)
+    if current is None:
+        result["int14s_lan_parse_error"] = "temperature_payload_rejected"
+        return result
+    result["frames"].append(
+        {
+            "name": "multisensor_current_temp_candidate",
+            "transport": "lan_dp109_int14s",
+            **current,
+        }
+    )
+    return result
+
+
 def parse_int11i_temperature_payload(raw: bytes) -> dict[str, Any] | None:
     if len(raw) < 2:
         return None

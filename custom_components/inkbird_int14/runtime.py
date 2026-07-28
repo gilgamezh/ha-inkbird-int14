@@ -56,6 +56,7 @@ from .protocol import (
     parse_cloud_dps,
     parse_int11i_battery_payload,
     parse_int11i_temperature_payload,
+    parse_int14s_lan_dps,
     parse_multisensor_temperature_payload,
     parse_notification,
     timer_epoch_values_plausible,
@@ -1130,10 +1131,21 @@ class Int14Runtime:
         self._notify_listeners()
 
     def apply_lan_dps(self, dps: dict[str, Any]) -> None:
-        parsed = parse_cloud_dps(dps)
+        parsed = (
+            parse_int14s_lan_dps(dps, self.profile.physical_probe_count) if self.profile.key == MODEL_INT14S_BW else parse_cloud_dps(dps)
+        )
         self.data["last_lan_update_epoch_s"] = int(time.time())
         self.data["last_lan_dp_keys"] = ",".join(parsed.get("dp_keys", []))
         self.data["local_lan_available"] = True
+        if self.profile.key == MODEL_INT14S_BW:
+            for key in (
+                "int14s_lan_payload_length",
+                "int14s_lan_crc8_received",
+                "int14s_lan_crc8_calculated",
+                "int14s_lan_crc8_valid",
+                "int14s_lan_parse_error",
+            ):
+                self.data[key] = parsed.get(key)
         live_allowed = self.transport_mode == TRANSPORT_MODE_WIFI_LAN_ONLY or not self.data.get("ble_connected")
         for frame in parsed["frames"]:
             transport = frame.get("transport")

@@ -104,7 +104,7 @@ class Int14AuthenticatedBleDiagnosticsButton(ButtonEntity):
 
 
 class Int14LanDiagnosticsButton(ButtonEntity):
-    """Read INT-14S Tuya DPs without enabling its unsupported LAN runtime."""
+    """Capture INT-14S Tuya DPs without applying them or sending writes."""
 
     _attr_has_entity_name = True
     _attr_name = "Capture Read-Only LAN Diagnostics"

@@ -123,6 +123,53 @@ def test_multisensor_ff01_rejects_unexpected_length() -> None:
     assert protocol.parse_multisensor_temperature_payload(bytes(18), 4) is None
 
 
+def test_int14s_lan_dp109_matches_validated_ble_layout_and_crc() -> None:
+    protocol = _load_protocol_module()
+    raw_hex = "b71efc1eb71ed51ed51f11031cfe7ffe7ffe7ffe7ffe7ffe7f7efe7ffe7ffe7ffe7ffe7ffe7f7efe7ffe7ffe7ffe7ffe7ffe7f7e2003c7"
+
+    parsed = protocol.parse_int14s_lan_dps({"109": raw_hex})
+
+    assert parsed["int14s_lan_payload_length"] == 55
+    assert parsed["int14s_lan_crc8_received"] == 0xC7
+    assert parsed["int14s_lan_crc8_calculated"] == 0xC7
+    assert parsed["int14s_lan_crc8_valid"] is True
+    assert parsed["int14s_lan_parse_error"] is None
+    assert len(parsed["frames"]) == 1
+    frame = parsed["frames"][0]
+    assert frame["name"] == "multisensor_current_temp_candidate"
+    assert frame["transport"] == "lan_dp109_int14s"
+    assert frame["base_temp_f_tenths"] == 800
+    assert frame["probes"][0]["internal_f_tenths"] == 786
+    assert frame["probes"][0]["food_f_tenths"] == [793, 786, 789, 815]
+    assert frame["probes"][0]["ambient_f_tenths"] == 785
+    assert frame["probes"][0]["status"] == 0x1C
+    assert all(probe["food_f_tenths"] == [None] * 4 for probe in frame["probes"][1:])
+
+
+def test_int14s_lan_dp109_rejects_bad_crc_without_live_frame() -> None:
+    protocol = _load_protocol_module()
+    raw = bytearray.fromhex(
+        "b71efc1eb71ed51ed51f11031cfe7ffe7ffe7ffe7ffe7ffe7f7efe7ffe7ffe7ffe7ffe7ffe7f7efe7ffe7ffe7ffe7ffe7ffe7f7e2003c7"
+    )
+    raw[-1] ^= 0x01
+
+    parsed = protocol.parse_int14s_lan_dps({"109": raw.hex()})
+
+    assert parsed["int14s_lan_crc8_valid"] is False
+    assert parsed["int14s_lan_parse_error"] == "crc_mismatch"
+    assert parsed["frames"] == []
+
+
+def test_int14s_lan_parser_ignores_unvalidated_dps() -> None:
+    protocol = _load_protocol_module()
+
+    parsed = protocol.parse_int14s_lan_dps({"101": "C", "102": True, "104": 100})
+
+    assert parsed["dp_keys"] == ["101", "102", "104"]
+    assert parsed["frames"] == []
+    assert parsed["int14s_lan_parse_error"] is None
+
+
 def test_int12e_capture_decodes_two_multisensor_probe_blocks() -> None:
     protocol = _load_protocol_module()
     raw = bytes.fromhex("3f1da71d3f1d811d021edf0219311d921d311d6d1d441ee5021aee02")

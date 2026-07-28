@@ -5,6 +5,14 @@
 - Mark INT-12E-BW BLE temperature/battery transport as community validated after stable real-device notification, fallback-read and reconnect testing.
 - Rename the polling option to `BLE fallback direct-read interval`, clarifying that valid BLE notifications can update entities more frequently than the configured fallback cadence.
 
+## 0.2.6-beta.7
+
+- Add experimental read-only Tuya LAN temperatures for INT-14S-BW from community hardware validation of DP109.
+- Decode DP109 as the validated 54-byte multisensor temperature frame plus a trailing CRC-8/ATM byte (`poly 0x07`, init `0x00`).
+- Reject unexpected lengths and checksum failures before applying any live temperature.
+- Keep every INT-14S LAN write and all unvalidated battery, state, target, timer and calibration DPs blocked.
+- Thanks to @remb0 for obtaining the local credentials privately and sharing a sanitized capture.
+
 ## 0.2.6-beta.6
 
 - Add an INT-14S-BW-only `Capture Read-Only LAN Diagnostics` button for mapping its model-specific Tuya DPs without enabling normal LAN polling.
