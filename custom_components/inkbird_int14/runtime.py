@@ -1144,6 +1144,11 @@ class Int14Runtime:
                 "int14s_lan_crc8_calculated",
                 "int14s_lan_crc8_valid",
                 "int14s_lan_parse_error",
+                "int14s_lan_battery_payload_length",
+                "int14s_lan_battery_crc8_received",
+                "int14s_lan_battery_crc8_calculated",
+                "int14s_lan_battery_crc8_valid",
+                "int14s_lan_battery_parse_error",
             ):
                 self.data[key] = parsed.get(key)
         live_allowed = self.transport_mode == TRANSPORT_MODE_WIFI_LAN_ONLY or not self.data.get("ble_connected")

@@ -185,9 +185,10 @@ def test_int14s_live_lan_path_uses_dedicated_read_only_parser() -> None:
     assert "parse_cloud_dps" in apply_lan_block
     assert "crc8_atm" in parser_block
     assert '"109"' in parser_block
+    assert '"103"' in parser_block
     assert "parse_multisensor_temperature_payload" in parser_block
+    assert "parse_battery_payload" in parser_block
     for forbidden_parser in (
-        "parse_battery_payload",
         "parse_calibration_payload",
         "parse_pre_alarm_payload",
         "parse_state_payload",

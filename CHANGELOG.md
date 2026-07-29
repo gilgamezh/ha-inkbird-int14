@@ -5,6 +5,15 @@
 - Mark INT-12E-BW BLE temperature/battery transport as community validated after stable real-device notification, fallback-read and reconnect testing.
 - Rename the polling option to `BLE fallback direct-read interval`, clarifying that valid BLE notifications can update entities more frequently than the configured fallback cadence.
 
+## 0.2.6-beta.9
+
+- Add read-only INT-14S-BW Tuya LAN battery readings from DP103.
+- Decode DP103 as station battery followed by Probe 1-4 battery percentages and a trailing CRC-8/ATM byte, matching both the vendor app parser and a sanitized real-device report.
+- Reject unexpected lengths and checksum failures before updating battery entities.
+- Keep battery values marked as station-reported; the existing quality diagnostics flag an all-100% plateau as suspect when charging state is unavailable.
+- Keep every INT-14S LAN write and all unvalidated charging/state/settings DPs blocked.
+- Thanks to @remb0 for the sanitized beta.8 diagnostics that confirmed the live DP103 frame.
+
 ## 0.2.6-beta.8
 
 - Confirm experimental read-only INT-14S-BW Tuya LAN temperature polling from a real Home Assistant beta.7 report.

@@ -160,6 +160,41 @@ def test_int14s_lan_dp109_rejects_bad_crc_without_live_frame() -> None:
     assert parsed["frames"] == []
 
 
+def test_int14s_lan_dp103_decodes_station_and_probe_batteries_with_crc() -> None:
+    protocol = _load_protocol_module()
+    payload = bytes([82, 75, 64, 53, 42])
+    raw = payload + bytes([protocol.crc8_atm(payload)])
+
+    parsed = protocol.parse_int14s_lan_dps({"103": raw.hex()})
+
+    assert parsed["int14s_lan_battery_payload_length"] == 6
+    assert parsed["int14s_lan_battery_crc8_received"] == raw[-1]
+    assert parsed["int14s_lan_battery_crc8_calculated"] == raw[-1]
+    assert parsed["int14s_lan_battery_crc8_valid"] is True
+    assert parsed["int14s_lan_battery_parse_error"] is None
+    assert parsed["frames"] == [
+        {
+            "name": "battery_candidate",
+            "transport": "lan_dp103_int14s",
+            "raw_hex": raw.hex(),
+            "base_power": 82,
+            "probe_battery": {1: 75, 2: 64, 3: 53, 4: 42},
+        }
+    ]
+
+
+def test_int14s_lan_dp103_rejects_bad_crc_without_battery_frame() -> None:
+    protocol = _load_protocol_module()
+    raw = bytearray.fromhex("6464646464da")
+    raw[-1] ^= 0x01
+
+    parsed = protocol.parse_int14s_lan_dps({"103": raw.hex()})
+
+    assert parsed["int14s_lan_battery_crc8_valid"] is False
+    assert parsed["int14s_lan_battery_parse_error"] == "crc_mismatch"
+    assert parsed["frames"] == []
+
+
 def test_int14s_lan_parser_ignores_unvalidated_dps() -> None:
     protocol = _load_protocol_module()
 
@@ -168,6 +203,7 @@ def test_int14s_lan_parser_ignores_unvalidated_dps() -> None:
     assert parsed["dp_keys"] == ["101", "102", "104"]
     assert parsed["frames"] == []
     assert parsed["int14s_lan_parse_error"] is None
+    assert parsed["int14s_lan_battery_parse_error"] is None
 
 
 def test_int12e_capture_decodes_two_multisensor_probe_blocks() -> None:

@@ -341,7 +341,7 @@ def crc8_atm(raw: bytes) -> int:
 
 
 def parse_int14s_lan_dps(dps: Mapping[str, Any], probe_count: int = 4) -> dict[str, Any]:
-    """Decode only the community-validated read-only INT-14S LAN temperature DP."""
+    """Decode the community-validated read-only INT-14S LAN DPs."""
     result: dict[str, Any] = {
         "frames": [],
         "dp_keys": sorted(str(key) for key in dps.keys()),
@@ -350,43 +350,73 @@ def parse_int14s_lan_dps(dps: Mapping[str, Any], probe_count: int = 4) -> dict[s
         "int14s_lan_crc8_calculated": None,
         "int14s_lan_crc8_valid": None,
         "int14s_lan_parse_error": None,
+        "int14s_lan_battery_payload_length": None,
+        "int14s_lan_battery_crc8_received": None,
+        "int14s_lan_battery_crc8_calculated": None,
+        "int14s_lan_battery_crc8_valid": None,
+        "int14s_lan_battery_parse_error": None,
     }
-    if dps.get("109") is None:
-        return result
 
-    try:
-        raw = _cloud_hex(dps["109"])
-    except (TypeError, ValueError):
-        result["int14s_lan_parse_error"] = "invalid_hex"
-        return result
+    if dps.get("109") is not None:
+        try:
+            raw = _cloud_hex(dps["109"])
+        except (TypeError, ValueError):
+            result["int14s_lan_parse_error"] = "invalid_hex"
+        else:
+            result["int14s_lan_payload_length"] = len(raw)
+            expected_length = probe_count * 13 + 3
+            if len(raw) != expected_length:
+                result["int14s_lan_parse_error"] = "unexpected_length"
+            else:
+                payload = raw[:-1]
+                received_crc = raw[-1]
+                calculated_crc = crc8_atm(payload)
+                result["int14s_lan_crc8_received"] = received_crc
+                result["int14s_lan_crc8_calculated"] = calculated_crc
+                result["int14s_lan_crc8_valid"] = received_crc == calculated_crc
+                if received_crc != calculated_crc:
+                    result["int14s_lan_parse_error"] = "crc_mismatch"
+                elif (current := parse_multisensor_temperature_payload(payload, probe_count)) is None:
+                    result["int14s_lan_parse_error"] = "temperature_payload_rejected"
+                else:
+                    result["frames"].append(
+                        {
+                            "name": "multisensor_current_temp_candidate",
+                            "transport": "lan_dp109_int14s",
+                            **current,
+                        }
+                    )
 
-    result["int14s_lan_payload_length"] = len(raw)
-    expected_length = probe_count * 13 + 3
-    if len(raw) != expected_length:
-        result["int14s_lan_parse_error"] = "unexpected_length"
-        return result
-
-    payload = raw[:-1]
-    received_crc = raw[-1]
-    calculated_crc = crc8_atm(payload)
-    result["int14s_lan_crc8_received"] = received_crc
-    result["int14s_lan_crc8_calculated"] = calculated_crc
-    result["int14s_lan_crc8_valid"] = received_crc == calculated_crc
-    if received_crc != calculated_crc:
-        result["int14s_lan_parse_error"] = "crc_mismatch"
-        return result
-
-    current = parse_multisensor_temperature_payload(payload, probe_count)
-    if current is None:
-        result["int14s_lan_parse_error"] = "temperature_payload_rejected"
-        return result
-    result["frames"].append(
-        {
-            "name": "multisensor_current_temp_candidate",
-            "transport": "lan_dp109_int14s",
-            **current,
-        }
-    )
+    if dps.get("103") is not None:
+        try:
+            raw = _cloud_hex(dps["103"])
+        except (TypeError, ValueError):
+            result["int14s_lan_battery_parse_error"] = "invalid_hex"
+        else:
+            result["int14s_lan_battery_payload_length"] = len(raw)
+            expected_length = probe_count + 2
+            if len(raw) != expected_length:
+                result["int14s_lan_battery_parse_error"] = "unexpected_length"
+            else:
+                payload = raw[:-1]
+                received_crc = raw[-1]
+                calculated_crc = crc8_atm(payload)
+                result["int14s_lan_battery_crc8_received"] = received_crc
+                result["int14s_lan_battery_crc8_calculated"] = calculated_crc
+                result["int14s_lan_battery_crc8_valid"] = received_crc == calculated_crc
+                if received_crc != calculated_crc:
+                    result["int14s_lan_battery_parse_error"] = "crc_mismatch"
+                elif (battery := parse_battery_payload(payload, probe_count)) is None:
+                    result["int14s_lan_battery_parse_error"] = "battery_payload_rejected"
+                else:
+                    result["frames"].append(
+                        {
+                            "name": "battery_candidate",
+                            "transport": "lan_dp103_int14s",
+                            "raw_hex": raw.hex(),
+                            **battery,
+                        }
+                    )
     return result
 
 

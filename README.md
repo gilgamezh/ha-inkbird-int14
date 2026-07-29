@@ -27,7 +27,7 @@ Product image is included only as a device reference. Inkbird names, logos and t
 - Optional cloud history is read-only and limited to DP109 temperature history.
 - Exposes mapped probe temperatures, station temperature, target values, transport status, local availability and selected battery/state indicators for supported profiles.
 - INT-11I-B has experimental read-only BLE GATT-poll support for one probe temperature and base/probe battery from a community validation report.
-- INT-14S-BW has community-validated read-only BLE support and experimental read-only Tuya LAN DP109 support for 20 mapped temperatures: four food sensors plus ambient on each of four physical probes.
+- INT-14S-BW has community-validated read-only BLE support and experimental read-only Tuya LAN support for 20 mapped temperatures plus station/probe batteries: four food sensors plus ambient on each of four physical probes.
 - INT-12E-BW has community-validated read-only BLE support in the `v0.2.6` prerelease line for 10 mapped temperatures: four food sensors plus ambient on each of two physical probes. Notifications update entities immediately, while fallback direct GATT reads run every 10 seconds by default.
 - Models with multi-sensor probes are represented with their expected physical-probe and temperature-channel layout, but live entities are created only for channels mapped by the current parser.
 
@@ -250,7 +250,7 @@ example-local-key
 - Cloud live data, cloud battery/state and cloud writes are not supported.
 - Model support is profile-specific. A known probe layout does not by itself mean that live parsing or writes are supported.
 - Cataloged multi-sensor profiles may show an expected channel layout without exposing live temperature entities.
-- INT-14S-BW supports BLE temperature/battery readings and experimental read-only Tuya LAN temperatures in `v0.2.6-beta.7`. LAN battery/state/target fields, cloud history, settings writes and protocol-state entities such as charging/paired/timer remain disabled until their model-specific DPs are validated.
+- INT-14S-BW supports BLE temperature/battery readings and experimental read-only Tuya LAN temperatures plus DP103 station/probe batteries in `v0.2.6-beta.9`. LAN charging/state/target fields, cloud history, settings writes and protocol-state entities such as charging/paired/timer remain disabled until their model-specific DPs are validated.
 - INT-12E-BW currently supports read-only BLE temperature/battery updates. Valid notifications are applied immediately; fallback direct GATT reads run every 10 seconds by default and can be configured from 5 to 300 seconds. The station may end sessions after about 30 seconds, after which the integration reconnects automatically. Tuya LAN, cloud, writes and protocol-state entities remain disabled.
 
 ## Alternatives
