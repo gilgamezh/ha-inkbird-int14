@@ -54,6 +54,6 @@ The capture does not include the configured host, device ID or local key. Home A
 
 ## Current Boundary
 
-INT-14S DP109 temperatures and DP103 station/probe battery percentages are enabled read-only over LAN. Both payloads must have the expected length and a valid CRC before any entity is updated. Charging, connection, alarm, timer, target, preset, calibration, display and sound DPs are not mapped by this parser.
+INT-14S DP109 temperatures, DP103 station/probe battery percentages and DP104 display brightness are enabled read-only over LAN. The encoded temperature and battery payloads must have the expected length and a valid CRC before any entity is updated; brightness must be an integer from 1 to 100. Charging, alarm, timer, target, preset, calibration and sound DPs are not mapped by this parser.
 
 All normal INT-14S writes remain blocked. The disabled-by-default BLE C/F validation buttons are a separate protocol experiment and are not enabled by selecting LAN.

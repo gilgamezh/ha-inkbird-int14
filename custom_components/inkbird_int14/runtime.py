@@ -1138,19 +1138,26 @@ class Int14Runtime:
         self.data["last_lan_dp_keys"] = ",".join(parsed.get("dp_keys", []))
         self.data["local_lan_available"] = True
         if self.profile.key == MODEL_INT14S_BW:
-            for key in (
+            temperature_keys = (
                 "int14s_lan_payload_length",
                 "int14s_lan_crc8_received",
                 "int14s_lan_crc8_calculated",
                 "int14s_lan_crc8_valid",
                 "int14s_lan_parse_error",
+            )
+            battery_keys = (
                 "int14s_lan_battery_payload_length",
                 "int14s_lan_battery_crc8_received",
                 "int14s_lan_battery_crc8_calculated",
                 "int14s_lan_battery_crc8_valid",
                 "int14s_lan_battery_parse_error",
-            ):
-                self.data[key] = parsed.get(key)
+            )
+            if "109" in parsed.get("dp_keys", []):
+                for key in temperature_keys:
+                    self.data[key] = parsed.get(key)
+            if "103" in parsed.get("dp_keys", []):
+                for key in battery_keys:
+                    self.data[key] = parsed.get(key)
         live_allowed = self.transport_mode == TRANSPORT_MODE_WIFI_LAN_ONLY or not self.data.get("ble_connected")
         for frame in parsed["frames"]:
             transport = frame.get("transport")

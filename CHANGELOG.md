@@ -5,6 +5,13 @@
 - Mark INT-12E-BW BLE temperature/battery transport as community validated after stable real-device notification, fallback-read and reconnect testing.
 - Rename the polling option to `BLE fallback direct-read interval`, clarifying that valid BLE notifications can update entities more frequently than the configured fallback cadence.
 
+## 0.2.6-beta.10
+
+- Add read-only INT-14S-BW Tuya LAN display brightness from DP104 after a sanitized real-device capture confirmed the configured 85% value.
+- Keep the last valid INT-14S temperature and battery CRC diagnostics when those DPs are absent from a later partial Tuya response.
+- Add visible diagnostic capture status and timestamp entities so users can tell when a LAN capture has actually completed before downloading diagnostics.
+- Keep INT-14S brightness, sound, alarm and all other writes disabled.
+
 ## 0.2.6-beta.9
 
 - Add read-only INT-14S-BW Tuya LAN battery readings from DP103.

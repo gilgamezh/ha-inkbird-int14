@@ -417,6 +417,17 @@ def parse_int14s_lan_dps(dps: Mapping[str, Any], probe_count: int = 4) -> dict[s
                             **battery,
                         }
                     )
+
+    if dps.get("104") is not None:
+        brightness = dps["104"]
+        if isinstance(brightness, int) and not isinstance(brightness, bool) and 1 <= brightness <= 100:
+            result["frames"].append(
+                {
+                    "name": "display_light_candidate",
+                    "transport": "lan_dp104_int14s",
+                    "display_light": brightness,
+                }
+            )
     return result
 
 

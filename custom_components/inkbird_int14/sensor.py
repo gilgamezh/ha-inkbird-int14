@@ -243,6 +243,13 @@ BASE_DIAGNOSTIC_DESCRIPTIONS = [
     DiagnosticDescription("local_lan_dp_count", "Local LAN DP Count", state_class=SensorStateClass.MEASUREMENT),
     DiagnosticDescription("local_lan_dp_keys", "Local LAN DP Keys"),
     DiagnosticDescription("local_lan_last_error", "Local LAN Last Error"),
+    DiagnosticDescription("lan_debug_status", "LAN Diagnostic Capture Status", enabled_default=True),
+    DiagnosticDescription(
+        "lan_debug_last_run_epoch_s",
+        "LAN Diagnostic Capture Epoch",
+        native_unit="s",
+        state_class=SensorStateClass.MEASUREMENT,
+    ),
     DiagnosticDescription("local_lan_last_err", "Local LAN Last Error Code"),
     DiagnosticDescription(
         "last_lan_update_epoch_s",

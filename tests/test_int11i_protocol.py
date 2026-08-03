@@ -195,12 +195,33 @@ def test_int14s_lan_dp103_rejects_bad_crc_without_battery_frame() -> None:
     assert parsed["frames"] == []
 
 
+def test_int14s_lan_dp104_decodes_validated_display_brightness() -> None:
+    protocol = _load_protocol_module()
+
+    parsed = protocol.parse_int14s_lan_dps({"104": 85})
+
+    assert parsed["frames"] == [
+        {
+            "name": "display_light_candidate",
+            "transport": "lan_dp104_int14s",
+            "display_light": 85,
+        }
+    ]
+
+
+def test_int14s_lan_dp104_rejects_bool_and_out_of_range_values() -> None:
+    protocol = _load_protocol_module()
+
+    for value in (True, 0, 101, "85"):
+        assert protocol.parse_int14s_lan_dps({"104": value})["frames"] == []
+
+
 def test_int14s_lan_parser_ignores_unvalidated_dps() -> None:
     protocol = _load_protocol_module()
 
-    parsed = protocol.parse_int14s_lan_dps({"101": "C", "102": True, "104": 100})
+    parsed = protocol.parse_int14s_lan_dps({"101": "C", "102": True, "106": 2})
 
-    assert parsed["dp_keys"] == ["101", "102", "104"]
+    assert parsed["dp_keys"] == ["101", "102", "106"]
     assert parsed["frames"] == []
     assert parsed["int14s_lan_parse_error"] is None
     assert parsed["int14s_lan_battery_parse_error"] is None

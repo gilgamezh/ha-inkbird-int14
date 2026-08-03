@@ -1,6 +1,6 @@
 # Release Audit
 
-Last reviewed: 2026-07-28
+Last reviewed: 2026-08-03
 
 ## Public Positioning
 
@@ -25,7 +25,7 @@ Do not describe prerelease behavior as part of the latest stable release. INT-14
 
 INT-14-BW remains the only profile with the full tested combination of BLE snapshots, Tuya LAN polling and mapped local writes.
 
-INT-14S-BW exposes 20 mapped temperatures and battery readings over read-only BLE. Beta.7 added experimental read-only Tuya LAN temperatures from CRC-validated DP109, and a real beta.7 Home Assistant report confirmed station plus undocked-probe readings. Beta.8 removes known stale entities left by an earlier incompatible profile selection. Beta.9 adds CRC-validated read-only station/probe battery percentages from DP103, following the byte order confirmed in the vendor app parser. LAN charging/state/settings DPs, cloud, normal writes and unverified protocol-state entities remain disabled.
+INT-14S-BW exposes 20 mapped temperatures and battery readings over read-only BLE. Beta.7 added experimental read-only Tuya LAN temperatures from CRC-validated DP109, and a real beta.7 Home Assistant report confirmed station plus undocked-probe readings. Beta.8 removes known stale entities left by an earlier incompatible profile selection. Beta.9 adds CRC-validated read-only station/probe battery percentages from DP103. Beta.10 adds read-only DP104 display brightness after a real capture matched the configured 85% value. LAN charging/state/settings DPs, cloud, normal writes and unverified protocol-state entities remain disabled.
 
 INT-12E-BW exposes ten mapped temperatures, station temperature and battery readings over read-only BLE. Notifications are applied immediately; configurable direct reads are only a fallback. The device may close sessions after about 30 seconds with reason `0x13`, and the integration reconnects automatically. Food 4 is confirmed as the tip channel on both probes; Food 1-3 still need physical mapping.
 
@@ -66,7 +66,7 @@ Run these checks again immediately before tagging a release:
 - `trufflehog filesystem . --no-update --fail --no-verification`
 - cache audit for `.pytest_cache`, `.ruff_cache`, `__pycache__`, `*.pyc` and `*.pyo`
 
-For this 2026-07-29 review, Ruff format/check, compileall and all 49 tests passed. Gitleaks and TruffleHog reported no secrets. Detect-secrets reported eight expected keyword matches for the `cloud_api_key` and `cloud_api_secret` field names in constants and translations; no credential values were present. The submitted INT-14S beta.8 runtime report was also checked before analysis: host, BLE address, device ID and local key were redacted. No test or bytecode cache remains in the repository.
+For this 2026-08-03 review, Ruff format/check, compileall and all 51 tests passed. Gitleaks and TruffleHog reported no secrets. Detect-secrets reported eight expected keyword matches for the `cloud_api_key` and `cloud_api_secret` field names in constants and translations; no credential values were present. The submitted INT-14S beta.10 runtime report was also checked before analysis: host, BLE address, device ID and local key were redacted. No test or bytecode cache remains in the repository.
 
 ## Remaining Risks
 
