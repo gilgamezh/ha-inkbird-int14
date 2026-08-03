@@ -220,6 +220,64 @@ def build_target_dp_value(
     return command[2:].hex()
 
 
+def build_int14s_lan_target_dp_value(
+    *,
+    food_mode: str = "10",
+    food_high_f_tenths: int = 0,
+    food_low_f_tenths: int = 0,
+    degree_code: int = 0,
+    food_index: int = -1,
+    start_epoch_s: int | None = None,
+    ambient_mode: str = "00",
+    ambient_high_f_tenths: int = 0,
+    ambient_low_f_tenths: int = 0,
+    ambient_degree_code: int = 0,
+    ambient_food_index: int = -1,
+    advance_value: int = 0,
+) -> str:
+    """Build the 20-byte INT-14S target DP payload used by DP122-125."""
+    if food_mode not in {"00", "01", "10", "11"}:
+        raise ValueError("food mode must be 00, 01, 10, or 11")
+    if ambient_mode not in {"00", "01", "10", "11"}:
+        raise ValueError("ambient mode must be 00, 01, 10, or 11")
+    for label, value in (
+        ("food high", food_high_f_tenths),
+        ("food low", food_low_f_tenths),
+        ("ambient high", ambient_high_f_tenths),
+        ("ambient low", ambient_low_f_tenths),
+    ):
+        if value < -32768 or value > 32767:
+            raise ValueError(f"{label} target must fit signed int16")
+    for label, value in (
+        ("degree code", degree_code),
+        ("ambient degree code", ambient_degree_code),
+        ("advance value", advance_value),
+    ):
+        if value < 0 or value > 255:
+            raise ValueError(f"{label} must be 0..255")
+    for label, value in (("food index", food_index), ("ambient food index", ambient_food_index)):
+        if value < -1 or value > 254:
+            raise ValueError(f"{label} must be -1..254")
+    if start_epoch_s is None:
+        start_epoch_s = int(time.time())
+    if start_epoch_s < 0 or start_epoch_s > 0xFFFFFFFF:
+        raise ValueError("start epoch must fit uint32")
+
+    payload = bytearray()
+    payload.append(int(food_mode, 16))
+    payload.extend(int(food_high_f_tenths).to_bytes(2, "little", signed=True))
+    payload.extend(int(food_low_f_tenths).to_bytes(2, "little", signed=True))
+    payload.extend((degree_code, food_index + 1))
+    payload.extend(int(start_epoch_s).to_bytes(4, "little", signed=False))
+    payload.append(int(ambient_mode, 16))
+    payload.extend(int(ambient_high_f_tenths).to_bytes(2, "little", signed=True))
+    payload.extend(int(ambient_low_f_tenths).to_bytes(2, "little", signed=True))
+    payload.extend((ambient_degree_code, ambient_food_index + 1, advance_value, 0))
+    if len(payload) != 20:
+        raise AssertionError("unexpected INT-14S target payload length")
+    return payload.hex()
+
+
 def build_pre_alarm_dp_value(probe: int, advance_values: list[int]) -> str:
     return _single_command_payload(build_pre_alarm_command(probe, advance_values), 0x23).hex()
 
@@ -340,6 +398,40 @@ def crc8_atm(raw: bytes) -> int:
     return crc
 
 
+def parse_int14s_lan_target_dp_value(value: Any, probe: int) -> dict[str, Any] | None:
+    """Parse a CRC-protected INT-14S DP122-125 target value."""
+    if not isinstance(value, str):
+        return None
+    try:
+        raw = bytes.fromhex(clean_hex(value))
+    except ValueError:
+        return None
+    if len(raw) != 21 or crc8_atm(raw[:-1]) != raw[-1]:
+        return None
+    food_mode = f"{raw[0]:02x}"
+    ambient_mode = f"{raw[11]:02x}"
+    if food_mode not in {"00", "01", "10", "11"} or ambient_mode not in {"00", "01", "10", "11"}:
+        return None
+    return {
+        "probe": probe,
+        "mode": food_mode,
+        "mode_name": {"00": "off", "01": "low", "10": "high", "11": "range"}[food_mode],
+        "target_high_f_tenths": le_i16(raw[1:3]),
+        "target_low_f_tenths": le_i16(raw[3:5]),
+        "degree_code": f"{raw[5]:02x}",
+        "food_index": raw[6] - 1,
+        "start_epoch_s": int.from_bytes(raw[7:11], "little", signed=False),
+        "ambient_mode": ambient_mode,
+        "ambient_target_high_f_tenths": le_i16(raw[12:14]),
+        "ambient_target_low_f_tenths": le_i16(raw[14:16]),
+        "ambient_degree_code": f"{raw[16]:02x}",
+        "ambient_food_index": raw[17] - 1,
+        "advance_value": raw[18],
+        "reserved": raw[19],
+        "crc8_received": raw[-1],
+    }
+
+
 def parse_int14s_lan_dps(dps: Mapping[str, Any], probe_count: int = 4) -> dict[str, Any]:
     """Decode the community-validated read-only INT-14S LAN DPs."""
     result: dict[str, Any] = {
@@ -426,6 +518,19 @@ def parse_int14s_lan_dps(dps: Mapping[str, Any], probe_count: int = 4) -> dict[s
                     "name": "display_light_candidate",
                     "transport": "lan_dp104_int14s",
                     "display_light": brightness,
+                }
+            )
+
+    for dp_id, probe in {"122": 1, "123": 2, "124": 3, "125": 4}.items():
+        if probe > probe_count or dps.get(dp_id) is None:
+            continue
+        target = parse_int14s_lan_target_dp_value(dps[dp_id], probe)
+        if target:
+            result["frames"].append(
+                {
+                    "name": "target_candidate",
+                    "transport": f"lan_dp{dp_id}_int14s",
+                    **target,
                 }
             )
     return result

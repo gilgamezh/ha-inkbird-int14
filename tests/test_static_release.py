@@ -149,6 +149,29 @@ def test_int14s_unit_write_validation_is_opt_in_and_narrow() -> None:
         assert forbidden_builder not in validation_block
 
 
+def test_int14s_target_write_validation_is_opt_in_lan_only_and_narrow() -> None:
+    component = ROOT / "custom_components" / "inkbird_int14"
+    number = (component / "number.py").read_text(encoding="utf-8")
+    runtime = (component / "runtime.py").read_text(encoding="utf-8")
+    models = (component / "models.py").read_text(encoding="utf-8")
+    validation_block = runtime.split("    async def request_int14s_target_high_write_validation", 1)[1].split(
+        "    async def write_ble_command",
+        1,
+    )[0]
+
+    assert "Int14sTargetHighValidationNumber" in number
+    assert "_attr_entity_registry_enabled_default = False" in number
+    assert "Validate LAN Write: Probe" in number
+    assert "MODEL_INT14S_BW" in validation_block
+    assert "build_int14s_lan_target_dp_value" in validation_block
+    assert "encode_raw_dp_hex" in validation_block
+    assert "set_lan_dps" in validation_block
+    assert "fetch_lan_dps" in validation_block
+    assert "write_ble_command" not in validation_block
+    assert "build_target_command" not in validation_block
+    assert 'write_support="not_supported"' in models.split("MODEL_INT14S_BW:", 1)[1].split("MODEL_INT14P_BW:", 1)[0]
+
+
 def test_int14s_lan_diagnostics_never_apply_or_write_dps() -> None:
     component = ROOT / "custom_components" / "inkbird_int14"
     lan = (component / "lan.py").read_text(encoding="utf-8")
@@ -187,13 +210,15 @@ def test_int14s_live_lan_path_uses_dedicated_read_only_parser() -> None:
     assert '"109"' in parser_block
     assert '"103"' in parser_block
     assert '"104"' in parser_block
+    assert '"122"' in parser_block
+    assert '"125"' in parser_block
     assert "parse_multisensor_temperature_payload" in parser_block
+    assert "parse_int14s_lan_target_dp_value" in parser_block
     assert "parse_battery_payload" in parser_block
     for forbidden_parser in (
         "parse_calibration_payload",
         "parse_pre_alarm_payload",
         "parse_state_payload",
-        "parse_target_payload",
         "parse_timer_payload",
     ):
         assert forbidden_parser not in parser_block

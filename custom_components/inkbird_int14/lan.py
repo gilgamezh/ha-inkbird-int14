@@ -127,6 +127,14 @@ def _normalize_raw_value(value: Any) -> Any:
     return decoded.hex() if decoded else value
 
 
+def encode_raw_dp_hex(value: str) -> str:
+    """Encode a hex payload for a Tuya raw DP carried as Base64 in local JSON."""
+    text = value.strip()
+    if len(text) % 2 or not re.fullmatch(r"[0-9a-fA-F]+", text):
+        raise ValueError("raw DP value must be even-length hex")
+    return base64.b64encode(bytes.fromhex(text)).decode("ascii")
+
+
 def _normalize_dps(result: Any) -> dict[str, Any]:
     if not isinstance(result, dict):
         return {}

@@ -5,6 +5,16 @@
 - Mark INT-12E-BW BLE temperature/battery transport as community validated after stable real-device notification, fallback-read and reconnect testing.
 - Rename the polling option to `BLE fallback direct-read interval`, clarifying that valid BLE notifications can update entities more frequently than the configured fallback cadence.
 
+## 0.2.6-beta.11
+
+- Add a model-specific parser and builder for the 20-byte INT-14S-BW target blocks carried by DP122-125.
+- Add four disabled-by-default diagnostic number entities that perform an opt-in Tuya LAN write of the food high target for Probes 1-4.
+- Encode the 20-byte value as Base64 for TinyTuya's local JSON representation of Tuya raw DPs.
+- Keep the validation strictly LAN-only: it never falls back to BLE and remains unavailable without complete Tuya LAN configuration.
+- Preserve known low-target, ambient, preset, timestamp and pre-alarm fields when constructing the compound target payload.
+- Validate read-back only when the station returns the written DP; otherwise report `awaiting_visual_confirmation` instead of claiming success.
+- Keep normal INT-14S settings controls and every other write disabled pending a real-device report.
+
 ## 0.2.6-beta.10
 
 - Add read-only INT-14S-BW Tuya LAN display brightness from DP104 after a sanitized real-device capture confirmed the configured 85% value.

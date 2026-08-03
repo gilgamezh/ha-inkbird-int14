@@ -26,7 +26,7 @@ from .const import (
     TRANSPORT_MODES,
     WRITE_UUID,
 )
-from .lan import TuyaLanConfig, capture_lan_diagnostics, fetch_lan_dps, set_lan_dps
+from .lan import TuyaLanConfig, capture_lan_diagnostics, encode_raw_dp_hex, fetch_lan_dps, set_lan_dps
 from .models import (
     AUTH_MODE_GATT_POLL,
     AUTH_MODE_SCAN_ONLY,
@@ -41,6 +41,7 @@ from .protocol import (
     build_calibration_command,
     build_calibration_dp_value,
     build_display_light_command,
+    build_int14s_lan_target_dp_value,
     build_pre_alarm_command,
     build_pre_alarm_dp_value,
     build_target_command,
@@ -50,6 +51,7 @@ from .protocol import (
     build_timer_reset_command,
     build_timer_reset_dp_value,
     build_unit_command,
+    c_tenths_to_f_tenths,
     diagnostic_snapshot_query_chunks,
     init_command_chunks,
     parse_battery_payload,
@@ -108,6 +110,7 @@ class Int14Runtime:
         self._lan_task: asyncio.Task | None = None
         self._client: BleakClient | None = None
         self._connection_lock = asyncio.Lock()
+        self._lan_write_lock = asyncio.Lock()
         self._mode_changed = asyncio.Event()
         self._auth_challenge_event = asyncio.Event()
         self._auth_ack_event = asyncio.Event()
@@ -240,7 +243,8 @@ class Int14Runtime:
         while True:
             try:
                 if self.lan_enabled:
-                    dps, summary = await self.hass.async_add_executor_job(fetch_lan_dps, config)
+                    async with self._lan_write_lock:
+                        dps, summary = await self.hass.async_add_executor_job(fetch_lan_dps, config)
                     self.data["local_lan_last_poll_epoch_s"] = int(time.time())
                     self.data["local_lan_status_ok"] = summary.get("status_ok")
                     self.data["local_lan_update_ok"] = summary.get("update_ok")
@@ -917,6 +921,104 @@ class Int14Runtime:
             self._set_ble_connected(False)
             self._notify_listeners()
 
+    async def request_int14s_target_high_write_validation(self, probe: int, target_c: float) -> None:
+        """Write one INT-14S food high target through Tuya LAN for validation."""
+        if self.profile.key != MODEL_INT14S_BW:
+            raise ValueError("Target write validation is available only for INT-14S-BW")
+        self._ensure_probe(probe)
+        if not self.lan_enabled or self.lan_config is None or not self.lan_config.is_complete:
+            raise ValueError("INT-14S target write validation requires complete Tuya LAN configuration")
+        if target_c < 0 or target_c > 300:
+            raise ValueError("target must be 0..300 C")
+
+        dp_id = str(121 + probe)
+        target_f_tenths = c_tenths_to_f_tenths(round(target_c * 10))
+        current_mode = self.data.get(f"probe_{probe}_target_mode")
+        food_mode = "11" if current_mode in {"low", "range"} else "10"
+        degree_code_raw = self.data.get(f"probe_{probe}_target_degree_code")
+        ambient_degree_code_raw = self.data.get(f"probe_{probe}_ambient_target_degree_code")
+        try:
+            degree_code = int(str(degree_code_raw), 16) if degree_code_raw is not None else 0
+        except ValueError:
+            degree_code = 0
+        try:
+            ambient_degree_code = int(str(ambient_degree_code_raw), 16) if ambient_degree_code_raw is not None else 0
+        except ValueError:
+            ambient_degree_code = 0
+        food_index_raw = self.data.get(f"probe_{probe}_target_food_index")
+        ambient_food_index_raw = self.data.get(f"probe_{probe}_ambient_target_food_index")
+        dp_value = build_int14s_lan_target_dp_value(
+            food_mode=food_mode,
+            food_high_f_tenths=target_f_tenths,
+            food_low_f_tenths=int(self.data.get(f"probe_{probe}_target_low_f_tenths") or 0),
+            degree_code=degree_code,
+            food_index=int(food_index_raw) if food_index_raw is not None else -1,
+            start_epoch_s=int(self.data.get(f"probe_{probe}_target_start_epoch_s") or time.time()),
+            ambient_mode=str(self.data.get(f"probe_{probe}_ambient_target_mode") or "00"),
+            ambient_high_f_tenths=int(self.data.get(f"probe_{probe}_ambient_target_high_f_tenths") or 0),
+            ambient_low_f_tenths=int(self.data.get(f"probe_{probe}_ambient_target_low_f_tenths") or 0),
+            ambient_degree_code=ambient_degree_code,
+            ambient_food_index=int(ambient_food_index_raw) if ambient_food_index_raw is not None else -1,
+            advance_value=int(self.data.get(f"probe_{probe}_advance_value") or 0),
+        )
+        prefix = "target_write_validation"
+        self.data.update(
+            {
+                f"{prefix}_active": True,
+                f"{prefix}_last_run_epoch_s": int(time.time()),
+                f"{prefix}_probe": probe,
+                f"{prefix}_requested_c": round(float(target_c), 1),
+                f"{prefix}_requested_f_tenths": target_f_tenths,
+                f"{prefix}_dp": dp_id,
+                f"{prefix}_status": "starting",
+                f"{prefix}_error": None,
+                f"{prefix}_command_sent": False,
+                f"{prefix}_readback_available": False,
+                f"{prefix}_readback_matches": None,
+            }
+        )
+        self._notify_listeners()
+
+        async with self._lan_write_lock:
+            try:
+                result = await self.hass.async_add_executor_job(
+                    set_lan_dps,
+                    self.lan_config,
+                    {dp_id: encode_raw_dp_hex(dp_value)},
+                )
+                ok = bool(result.get("ok"))
+                self.data["last_lan_write_epoch_s"] = int(time.time())
+                self.data["last_lan_write_dps"] = dp_id
+                self.data["last_lan_write_ok"] = ok
+                self.data["last_lan_write_error"] = result.get("error")
+                self.data["last_lan_write_err"] = result.get("err")
+                if not ok:
+                    raise RuntimeError(str(result.get("error") or result.get("err") or "target_write_failed"))
+
+                self.data[f"{prefix}_command_sent"] = True
+                self.data[f"{prefix}_status"] = "command_sent"
+                self._notify_listeners()
+                await asyncio.sleep(1)
+
+                readback, summary = await self.hass.async_add_executor_job(fetch_lan_dps, self.lan_config)
+                self.data["local_lan_dp_count"] = summary.get("dps_count")
+                self.data["local_lan_dp_keys"] = ",".join(summary.get("dps_keys") or [])
+                if dp_id in readback:
+                    self.apply_lan_dps(readback)
+                    actual = self.data.get(f"probe_{probe}_target_high_f_tenths")
+                    self.data[f"{prefix}_readback_available"] = actual is not None
+                    self.data[f"{prefix}_readback_matches"] = actual == target_f_tenths if actual is not None else None
+                    self.data[f"{prefix}_status"] = "confirmed_by_readback" if actual == target_f_tenths else "readback_mismatch"
+                else:
+                    self.data[f"{prefix}_status"] = "awaiting_visual_confirmation"
+            except Exception as exc:  # noqa: BLE001
+                self.data[f"{prefix}_status"] = "failed"
+                self.data[f"{prefix}_error"] = str(exc)[:200]
+                raise
+            finally:
+                self.data[f"{prefix}_active"] = False
+                self._notify_listeners()
+
     async def write_ble_command(self, payload: bytes, *, request_readback: bool = True) -> bool:
         if self.profile.write_support == "not_supported":
             raise ValueError(f"INT14 writes are not implemented for {self.profile.display_name}")
@@ -1292,8 +1394,17 @@ class Int14Runtime:
                 self.data[f"probe_{idx}_target_high_f_tenths"] = frame.get("target_high_f_tenths")
                 self.data[f"probe_{idx}_target_low_f_tenths"] = frame.get("target_low_f_tenths")
                 self.data[f"probe_{idx}_target_mode"] = frame.get("mode_name")
+                self.data[f"probe_{idx}_target_mode_code"] = frame.get("mode")
                 self.data[f"probe_{idx}_target_food_index"] = frame.get("food_index")
                 self.data[f"probe_{idx}_target_degree_code"] = frame.get("degree_code")
+                self.data[f"probe_{idx}_target_start_epoch_s"] = frame.get("start_epoch_s")
+                self.data[f"probe_{idx}_ambient_target_mode"] = frame.get("ambient_mode")
+                self.data[f"probe_{idx}_ambient_target_high_f_tenths"] = frame.get("ambient_target_high_f_tenths")
+                self.data[f"probe_{idx}_ambient_target_low_f_tenths"] = frame.get("ambient_target_low_f_tenths")
+                self.data[f"probe_{idx}_ambient_target_degree_code"] = frame.get("ambient_degree_code")
+                self.data[f"probe_{idx}_ambient_target_food_index"] = frame.get("ambient_food_index")
+                if frame.get("advance_value") is not None:
+                    self.data[f"probe_{idx}_advance_value"] = frame.get("advance_value")
         elif frame.get("name") == "pre_alarm_candidate":
             self.data["last_transport"] = frame.get("transport")
             for idx, value in enumerate(frame.get("advance_values", []), start=1):

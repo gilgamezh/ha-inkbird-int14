@@ -103,6 +103,7 @@ async def async_get_config_entry_diagnostics(hass: HomeAssistant, entry: ConfigE
             or key.startswith("ble_debug_")
             or key.startswith("lan_debug_")
             or key.startswith("ble_write_validation_")
+            or key.startswith("target_write_validation_")
             or MULTISENSOR_RUNTIME_KEY_PATTERN.fullmatch(key)
         }
         payload["runtime"] = async_redact_data(_sanitize_runtime_value(runtime_data), TO_REDACT)

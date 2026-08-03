@@ -57,3 +57,11 @@ The capture does not include the configured host, device ID or local key. Home A
 INT-14S DP109 temperatures, DP103 station/probe battery percentages and DP104 display brightness are enabled read-only over LAN. The encoded temperature and battery payloads must have the expected length and a valid CRC before any entity is updated; brightness must be an integer from 1 to 100. Charging, alarm, timer, target, preset, calibration and sound DPs are not mapped by this parser.
 
 All normal INT-14S writes remain blocked. The disabled-by-default BLE C/F validation buttons are a separate protocol experiment and are not enabled by selecting LAN.
+
+## INT-14S Target Write Validation
+
+`v0.2.6-beta.11` adds one disabled-by-default diagnostic number per physical probe: `Validate LAN Write: Probe N Food High Target`. It writes a real food high target through DP122-125 using the 20-byte layout implemented by the Inkbird app.
+
+The validation is available only with complete INT-14S Tuya LAN configuration. It never falls back to BLE. Use an idle probe, note its current target, enter a new value in Celsius and confirm the result on the station or in the Inkbird app. Diagnostics report `confirmed_by_readback` only if the station returns the DP and the decoded target matches; otherwise they report `awaiting_visual_confirmation`.
+
+Normal target controls, low/ambient target writes, pre-alarm writes and all other INT-14S settings remain disabled until this first write is confirmed on real hardware.

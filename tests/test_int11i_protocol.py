@@ -216,6 +216,69 @@ def test_int14s_lan_dp104_rejects_bool_and_out_of_range_values() -> None:
         assert protocol.parse_int14s_lan_dps({"104": value})["frames"] == []
 
 
+def test_int14s_lan_target_builder_matches_vendor_20_byte_layout() -> None:
+    protocol = _load_protocol_module()
+
+    value = protocol.build_int14s_lan_target_dp_value(
+        food_mode="10",
+        food_high_f_tenths=1580,
+        start_epoch_s=0x12345678,
+    )
+
+    assert value == "102c060000000078563412000000000000000000"
+    assert len(bytes.fromhex(value)) == 20
+
+
+def test_int14s_lan_dp122_parses_crc_protected_target() -> None:
+    protocol = _load_protocol_module()
+    payload = bytes.fromhex(
+        protocol.build_int14s_lan_target_dp_value(
+            food_mode="11",
+            food_high_f_tenths=1580,
+            food_low_f_tenths=1400,
+            start_epoch_s=0x12345678,
+            ambient_mode="11",
+            ambient_high_f_tenths=750,
+            ambient_low_f_tenths=650,
+            advance_value=18,
+        )
+    )
+    value = (payload + bytes([protocol.crc8_atm(payload)])).hex()
+
+    parsed = protocol.parse_int14s_lan_dps({"122": value})
+
+    assert parsed["frames"] == [
+        {
+            "name": "target_candidate",
+            "transport": "lan_dp122_int14s",
+            "probe": 1,
+            "mode": "11",
+            "mode_name": "range",
+            "target_high_f_tenths": 1580,
+            "target_low_f_tenths": 1400,
+            "degree_code": "00",
+            "food_index": -1,
+            "start_epoch_s": 0x12345678,
+            "ambient_mode": "11",
+            "ambient_target_high_f_tenths": 750,
+            "ambient_target_low_f_tenths": 650,
+            "ambient_degree_code": "00",
+            "ambient_food_index": -1,
+            "advance_value": 18,
+            "reserved": 0,
+            "crc8_received": protocol.crc8_atm(payload),
+        }
+    ]
+
+
+def test_int14s_lan_target_rejects_missing_or_bad_crc() -> None:
+    protocol = _load_protocol_module()
+    payload = bytes.fromhex(protocol.build_int14s_lan_target_dp_value(food_high_f_tenths=1580, start_epoch_s=1))
+
+    assert protocol.parse_int14s_lan_target_dp_value(payload.hex(), 1) is None
+    assert protocol.parse_int14s_lan_target_dp_value((payload + b"\x00").hex(), 1) is None
+
+
 def test_int14s_lan_parser_ignores_unvalidated_dps() -> None:
     protocol = _load_protocol_module()
 

@@ -8,6 +8,7 @@ from homeassistant.helpers.entity import EntityCategory
 from homeassistant.helpers.entity_platform import AddEntitiesCallback
 
 from .const import CONF_NAME, DOMAIN
+from .models import MODEL_INT14S_BW
 
 DEGREE_CODE_TO_INDEX = {
     "01": 1,
@@ -26,6 +27,12 @@ async def async_setup_entry(
 ) -> None:
     runtime = hass.data[DOMAIN][entry.entry_id]
     base_name = entry.data[CONF_NAME]
+    if runtime.profile.key == MODEL_INT14S_BW:
+        entities = [
+            Int14sTargetHighValidationNumber(runtime, base_name, probe_layout.index) for probe_layout in runtime.profile.probe_layout
+        ]
+        async_add_entities(entities)
+        return
     if runtime.profile.write_support == "not_supported" or not runtime.profile.has_live_runtime_data:
         async_add_entities([])
         return
@@ -67,6 +74,39 @@ class Int14NumberBase(NumberEntity):
     @callback
     def _handle_update(self) -> None:
         self.async_write_ha_state()
+
+
+class Int14sTargetHighValidationNumber(Int14NumberBase):
+    """Disabled-by-default INT-14S LAN target write validation control."""
+
+    _attr_native_unit_of_measurement = UnitOfTemperature.CELSIUS
+    _attr_native_min_value = 0
+    _attr_native_max_value = 300
+    _attr_native_step = 1
+    _attr_entity_category = EntityCategory.DIAGNOSTIC
+    _attr_entity_registry_enabled_default = False
+
+    def __init__(self, runtime, base_name: str, probe: int) -> None:
+        super().__init__(runtime, base_name)
+        self.probe = probe
+        self._attr_unique_id = f"{runtime.address}_probe_{probe}_validate_lan_target_high"
+        self._attr_name = f"Validate LAN Write: Probe {probe} Food High Target"
+
+    @property
+    def available(self) -> bool:
+        return bool(self.runtime.lan_enabled and self.runtime.lan_config is not None and self.runtime.lan_config.is_complete)
+
+    @property
+    def native_value(self):
+        value = self.runtime.data.get(f"probe_{self.probe}_target_high_f_tenths")
+        if value is not None:
+            return round((value - 320) / 18, 1)
+        if self.runtime.data.get("target_write_validation_probe") == self.probe:
+            return self.runtime.data.get("target_write_validation_requested_c")
+        return None
+
+    async def async_set_native_value(self, value: float) -> None:
+        await self.runtime.request_int14s_target_high_write_validation(self.probe, value)
 
 
 class Int14DisplayLightNumber(Int14NumberBase):

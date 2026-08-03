@@ -250,7 +250,7 @@ example-local-key
 - Cloud live data, cloud battery/state and cloud writes are not supported.
 - Model support is profile-specific. A known probe layout does not by itself mean that live parsing or writes are supported.
 - Cataloged multi-sensor profiles may show an expected channel layout without exposing live temperature entities.
-- INT-14S-BW supports BLE temperature/battery readings and experimental read-only Tuya LAN temperatures, DP103 station/probe batteries and DP104 display brightness in `v0.2.6-beta.10`. LAN charging/state/target fields, cloud history, settings writes and protocol-state entities such as charging/paired/timer remain disabled until their model-specific DPs are validated.
+- INT-14S-BW supports BLE temperature/battery readings and experimental read-only Tuya LAN temperatures, DP103 station/probe batteries and DP104 display brightness. `v0.2.6-beta.11` adds a disabled-by-default LAN validation control for the food high target of each probe. This is an opt-in hardware test, not general write support. LAN charging/state fields, cloud history and all other settings writes remain disabled until their model-specific DPs are validated.
 - INT-12E-BW currently supports read-only BLE temperature/battery updates. Valid notifications are applied immediately; fallback direct GATT reads run every 10 seconds by default and can be configured from 5 to 300 seconds. The station may end sessions after about 30 seconds, after which the integration reconnects automatically. Tuya LAN, cloud, writes and protocol-state entities remain disabled.
 
 ## Alternatives

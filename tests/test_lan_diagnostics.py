@@ -91,3 +91,20 @@ def test_unknown_binary_dp_is_hashed_not_exported() -> None:
     assert summary["length"] == len(b"unknown-private-binary")
     assert "value_hex" not in summary
     assert len(summary["sha256"]) == 64
+
+
+def test_raw_dp_hex_is_base64_encoded_for_tinytuya_control() -> None:
+    lan = _load_lan_module()
+
+    assert lan.encode_raw_dp_hex("102c0600") == "ECwGAA=="
+
+
+def test_raw_dp_encoder_rejects_non_hex_and_odd_length() -> None:
+    lan = _load_lan_module()
+
+    for value in ("123", "not-hex", ""):
+        try:
+            lan.encode_raw_dp_hex(value)
+        except ValueError:
+            continue
+        raise AssertionError(f"expected ValueError for {value!r}")
