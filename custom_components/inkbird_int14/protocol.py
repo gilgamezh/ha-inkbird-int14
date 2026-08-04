@@ -295,6 +295,16 @@ def target_mode_after_threshold_write(current_mode: Any, threshold: str) -> str:
     raise ValueError("threshold must be high or low")
 
 
+def target_mode_has_threshold(current_mode: Any, threshold: str) -> bool:
+    """Return whether a target mode currently enables one threshold."""
+    mode = normalize_target_mode(current_mode)
+    if threshold == "high":
+        return mode in {"10", "11"}
+    if threshold == "low":
+        return mode in {"01", "11"}
+    raise ValueError("threshold must be high or low")
+
+
 def build_pre_alarm_dp_value(probe: int, advance_values: list[int]) -> str:
     return _single_command_payload(build_pre_alarm_command(probe, advance_values), 0x23).hex()
 

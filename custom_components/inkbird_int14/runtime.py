@@ -114,6 +114,7 @@ class Int14Runtime:
         self._client: BleakClient | None = None
         self._connection_lock = asyncio.Lock()
         self._lan_write_lock = asyncio.Lock()
+        self._target_write_validation_lock = asyncio.Lock()
         self._mode_changed = asyncio.Event()
         self._auth_challenge_event = asyncio.Event()
         self._auth_ack_event = asyncio.Event()
@@ -925,6 +926,11 @@ class Int14Runtime:
             self._notify_listeners()
 
     async def request_int14s_target_write_validation(self, probe: int, field: str, target_c: float) -> None:
+        """Serialize a complete INT-14S target write and its state update."""
+        async with self._target_write_validation_lock:
+            await self._request_int14s_target_write_validation_locked(probe, field, target_c)
+
+    async def _request_int14s_target_write_validation_locked(self, probe: int, field: str, target_c: float) -> None:
         """Write one INT-14S target threshold through Tuya LAN for validation."""
         if self.profile.key != MODEL_INT14S_BW:
             raise ValueError("Target write validation is available only for INT-14S-BW")

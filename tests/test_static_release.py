@@ -162,6 +162,8 @@ def test_int14s_target_write_validation_is_opt_in_lan_only_and_narrow() -> None:
     assert "Int14sTargetValidationNumber" in number
     assert "_attr_entity_registry_enabled_default = False" in number
     assert "Validate LAN Write: Probe" in number
+    assert "target_mode_has_threshold" in number
+    assert 'and not self.runtime.data.get("target_write_validation_active")' in number
     for field in ("food_high", "food_low", "ambient_high", "ambient_low"):
         assert field in number
         assert field in validation_block
@@ -169,6 +171,8 @@ def test_int14s_target_write_validation_is_opt_in_lan_only_and_narrow() -> None:
     assert "accepted_lan_command" in validation_block
     assert 'f"{prefix}_history"' in validation_block
     assert "history[-8:]" in validation_block
+    assert "_target_write_validation_lock" in validation_block
+    assert "_request_int14s_target_write_validation_locked" in validation_block
     assert "target_mode_after_threshold_write" in validation_block
     assert "parse_int14s_lan_target_dp_value" in validation_block
     assert "MODEL_INT14S_BW" in validation_block

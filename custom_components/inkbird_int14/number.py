@@ -9,6 +9,7 @@ from homeassistant.helpers.entity_platform import AddEntitiesCallback
 
 from .const import CONF_NAME, DOMAIN
 from .models import MODEL_INT14S_BW
+from .protocol import target_mode_has_threshold
 
 DEGREE_CODE_TO_INDEX = {
     "01": 1,
@@ -108,15 +109,27 @@ class Int14sTargetValidationNumber(Int14NumberBase):
         self.probe = probe
         self.field = field
         self.data_suffix = data_suffix
+        self.threshold = "high" if field.endswith("high") else "low"
+        self.mode_data_suffix = "ambient_target_mode" if field.startswith("ambient") else "target_mode_code"
         self._attr_unique_id = f"{runtime.address}_probe_{probe}_{unique_suffix}"
         self._attr_name = f"Validate LAN Write: Probe {probe} {label}"
 
     @property
     def available(self) -> bool:
-        return bool(self.runtime.lan_enabled and self.runtime.lan_config is not None and self.runtime.lan_config.is_complete)
+        return bool(
+            self.runtime.lan_enabled
+            and self.runtime.lan_config is not None
+            and self.runtime.lan_config.is_complete
+            and not self.runtime.data.get("target_write_validation_active")
+        )
 
     @property
     def native_value(self):
+        mode = self.runtime.data.get(f"probe_{self.probe}_{self.mode_data_suffix}")
+        if self.mode_data_suffix == "target_mode_code" and mode is None:
+            mode = self.runtime.data.get(f"probe_{self.probe}_target_mode")
+        if not target_mode_has_threshold(mode, self.threshold):
+            return None
         value = self.runtime.data.get(f"probe_{self.probe}_{self.data_suffix}")
         if value is not None:
             return round((value - 320) / 18, 1)

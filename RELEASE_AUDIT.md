@@ -25,7 +25,7 @@ Do not describe prerelease behavior as part of the latest stable release. INT-14
 
 INT-14-BW remains the only profile with the full tested combination of BLE snapshots, Tuya LAN polling and mapped local writes.
 
-INT-14S-BW exposes 20 mapped temperatures and battery readings over read-only BLE. Beta.7 added experimental read-only Tuya LAN temperatures from CRC-validated DP109, and a real beta.7 Home Assistant report confirmed station plus undocked-probe readings. Beta.8 removes known stale entities left by an earlier incompatible profile selection. Beta.9 adds CRC-validated read-only station/probe battery percentages from DP103. Beta.10 adds read-only DP104 display brightness after a real capture matched the configured 85% value. A real beta.11 Probe 1 test confirmed the LAN food-high target write at 90 C. Beta.12 expands the disabled-by-default DP122-125 validation to food high/low and ambient high/low while preserving prior accepted values. LAN charging/state DPs, cloud, normal writes and unverified protocol-state entities remain disabled.
+INT-14S-BW exposes 20 mapped temperatures and battery readings over read-only BLE. Beta.7 added experimental read-only Tuya LAN temperatures from CRC-validated DP109, and a real beta.7 Home Assistant report confirmed station plus undocked-probe readings. Beta.8 removes known stale entities left by an earlier incompatible profile selection. Beta.9 adds CRC-validated read-only station/probe battery percentages from DP103. Beta.10 adds read-only DP104 display brightness after a real capture matched the configured 85% value. A real beta.11 Probe 1 test confirmed the LAN food-high target write at 90 C. Beta.12 expanded the disabled-by-default DP122-125 validation to food high/low and ambient high/low, but a real test exposed concurrent diagnostic/state preparation and a misleading unset `0 F` display. Beta.13 serializes the entire operation and hides inactive thresholds. LAN charging/state DPs, cloud, normal writes and unverified protocol-state entities remain disabled.
 
 INT-12E-BW exposes ten mapped temperatures, station temperature and battery readings over read-only BLE. Notifications are applied immediately; configurable direct reads are only a fallback. The device may close sessions after about 30 seconds with reason `0x13`, and the integration reconnects automatically. Food 4 is confirmed as the tip channel on both probes; Food 1-3 still need physical mapping.
 
@@ -72,7 +72,7 @@ For this 2026-08-04 review, Ruff format/check, compileall and all 60 tests passe
 
 - INT-12E-BW needs a controlled physical mapping for Food 1-3.
 - INT-14S-BW read-only LAN temperatures are validated from a sanitized capture and a real beta.7 runtime report. Longer reconnect and dock/undock testing is still useful.
-- INT-14S-BW food-high LAN target writing is community validated. Food-low and ambient high/low remain opt-in beta.12 tests; normal controls and unrelated writes stay blocked.
+- INT-14S-BW food-high LAN target writing is community validated. Food-low and ambient high/low remain opt-in beta.13 tests; normal controls and unrelated writes stay blocked.
 - INT-11I-B support is based on limited community hardware validation.
 - Tuya local keys must be obtained and protected by each device owner.
 - Battery percentages are station-reported values and may remain at 100% for long periods.

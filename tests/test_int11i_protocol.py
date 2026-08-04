@@ -238,6 +238,12 @@ def test_int14s_target_modes_preserve_the_other_threshold() -> None:
     assert protocol.target_mode_after_threshold_write("11", "low") == "11"
     assert protocol.normalize_target_mode("high") == "10"
     assert protocol.normalize_target_mode("unexpected") == "00"
+    assert protocol.target_mode_has_threshold("10", "high") is True
+    assert protocol.target_mode_has_threshold("10", "low") is False
+    assert protocol.target_mode_has_threshold("range", "high") is True
+    assert protocol.target_mode_has_threshold("range", "low") is True
+    assert protocol.target_mode_has_threshold("off", "high") is False
+    assert protocol.target_mode_has_threshold("off", "low") is False
 
 
 def test_int14s_target_mode_rejects_unknown_threshold() -> None:
@@ -245,6 +251,13 @@ def test_int14s_target_mode_rejects_unknown_threshold() -> None:
 
     try:
         protocol.target_mode_after_threshold_write("off", "middle")
+    except ValueError:
+        pass
+    else:
+        raise AssertionError("expected ValueError for an unknown target threshold")
+
+    try:
+        protocol.target_mode_has_threshold("off", "middle")
     except ValueError:
         return
     raise AssertionError("expected ValueError for an unknown target threshold")
