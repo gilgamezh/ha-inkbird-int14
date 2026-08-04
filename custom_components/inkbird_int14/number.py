@@ -18,6 +18,12 @@ DEGREE_CODE_TO_INDEX = {
     "0a": 5,
 }
 DEFAULT_PRE_ALARM_VALUES = (18, 18, 72, 18)
+INT14S_TARGET_VALIDATION_FIELDS = (
+    ("food_high", "Food High Target", "target_high_f_tenths", "validate_lan_target_high"),
+    ("food_low", "Food Low Target", "target_low_f_tenths", "validate_lan_target_low"),
+    ("ambient_high", "Ambient High Target", "ambient_target_high_f_tenths", "validate_lan_ambient_target_high"),
+    ("ambient_low", "Ambient Low Target", "ambient_target_low_f_tenths", "validate_lan_ambient_target_low"),
+)
 
 
 async def async_setup_entry(
@@ -29,7 +35,9 @@ async def async_setup_entry(
     base_name = entry.data[CONF_NAME]
     if runtime.profile.key == MODEL_INT14S_BW:
         entities = [
-            Int14sTargetHighValidationNumber(runtime, base_name, probe_layout.index) for probe_layout in runtime.profile.probe_layout
+            Int14sTargetValidationNumber(runtime, base_name, probe_layout.index, field, label, data_suffix, unique_suffix)
+            for probe_layout in runtime.profile.probe_layout
+            for field, label, data_suffix, unique_suffix in INT14S_TARGET_VALIDATION_FIELDS
         ]
         async_add_entities(entities)
         return
@@ -76,8 +84,8 @@ class Int14NumberBase(NumberEntity):
         self.async_write_ha_state()
 
 
-class Int14sTargetHighValidationNumber(Int14NumberBase):
-    """Disabled-by-default INT-14S LAN target write validation control."""
+class Int14sTargetValidationNumber(Int14NumberBase):
+    """Disabled-by-default INT-14S LAN target validation control."""
 
     _attr_native_unit_of_measurement = UnitOfTemperature.CELSIUS
     _attr_native_min_value = 0
@@ -86,11 +94,22 @@ class Int14sTargetHighValidationNumber(Int14NumberBase):
     _attr_entity_category = EntityCategory.DIAGNOSTIC
     _attr_entity_registry_enabled_default = False
 
-    def __init__(self, runtime, base_name: str, probe: int) -> None:
+    def __init__(
+        self,
+        runtime,
+        base_name: str,
+        probe: int,
+        field: str,
+        label: str,
+        data_suffix: str,
+        unique_suffix: str,
+    ) -> None:
         super().__init__(runtime, base_name)
         self.probe = probe
-        self._attr_unique_id = f"{runtime.address}_probe_{probe}_validate_lan_target_high"
-        self._attr_name = f"Validate LAN Write: Probe {probe} Food High Target"
+        self.field = field
+        self.data_suffix = data_suffix
+        self._attr_unique_id = f"{runtime.address}_probe_{probe}_{unique_suffix}"
+        self._attr_name = f"Validate LAN Write: Probe {probe} {label}"
 
     @property
     def available(self) -> bool:
@@ -98,15 +117,18 @@ class Int14sTargetHighValidationNumber(Int14NumberBase):
 
     @property
     def native_value(self):
-        value = self.runtime.data.get(f"probe_{self.probe}_target_high_f_tenths")
+        value = self.runtime.data.get(f"probe_{self.probe}_{self.data_suffix}")
         if value is not None:
             return round((value - 320) / 18, 1)
-        if self.runtime.data.get("target_write_validation_probe") == self.probe:
+        if (
+            self.runtime.data.get("target_write_validation_probe") == self.probe
+            and self.runtime.data.get("target_write_validation_field") == self.field
+        ):
             return self.runtime.data.get("target_write_validation_requested_c")
         return None
 
     async def async_set_native_value(self, value: float) -> None:
-        await self.runtime.request_int14s_target_high_write_validation(self.probe, value)
+        await self.runtime.request_int14s_target_write_validation(self.probe, self.field, value)
 
 
 class Int14DisplayLightNumber(Int14NumberBase):

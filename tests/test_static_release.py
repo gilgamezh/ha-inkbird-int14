@@ -154,14 +154,23 @@ def test_int14s_target_write_validation_is_opt_in_lan_only_and_narrow() -> None:
     number = (component / "number.py").read_text(encoding="utf-8")
     runtime = (component / "runtime.py").read_text(encoding="utf-8")
     models = (component / "models.py").read_text(encoding="utf-8")
-    validation_block = runtime.split("    async def request_int14s_target_high_write_validation", 1)[1].split(
+    validation_block = runtime.split("    async def request_int14s_target_write_validation", 1)[1].split(
         "    async def write_ble_command",
         1,
     )[0]
 
-    assert "Int14sTargetHighValidationNumber" in number
+    assert "Int14sTargetValidationNumber" in number
     assert "_attr_entity_registry_enabled_default = False" in number
     assert "Validate LAN Write: Probe" in number
+    for field in ("food_high", "food_low", "ambient_high", "ambient_low"):
+        assert field in number
+        assert field in validation_block
+    assert "validate_lan_target_high" in number
+    assert "accepted_lan_command" in validation_block
+    assert 'f"{prefix}_history"' in validation_block
+    assert "history[-8:]" in validation_block
+    assert "target_mode_after_threshold_write" in validation_block
+    assert "parse_int14s_lan_target_dp_value" in validation_block
     assert "MODEL_INT14S_BW" in validation_block
     assert "build_int14s_lan_target_dp_value" in validation_block
     assert "encode_raw_dp_hex" in validation_block

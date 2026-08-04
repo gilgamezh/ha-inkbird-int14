@@ -229,6 +229,51 @@ def test_int14s_lan_target_builder_matches_vendor_20_byte_layout() -> None:
     assert len(bytes.fromhex(value)) == 20
 
 
+def test_int14s_target_modes_preserve_the_other_threshold() -> None:
+    protocol = _load_protocol_module()
+
+    assert protocol.target_mode_after_threshold_write("off", "high") == "10"
+    assert protocol.target_mode_after_threshold_write("10", "low") == "11"
+    assert protocol.target_mode_after_threshold_write("low", "high") == "11"
+    assert protocol.target_mode_after_threshold_write("11", "low") == "11"
+    assert protocol.normalize_target_mode("high") == "10"
+    assert protocol.normalize_target_mode("unexpected") == "00"
+
+
+def test_int14s_target_mode_rejects_unknown_threshold() -> None:
+    protocol = _load_protocol_module()
+
+    try:
+        protocol.target_mode_after_threshold_write("off", "middle")
+    except ValueError:
+        return
+    raise AssertionError("expected ValueError for an unknown target threshold")
+
+
+def test_int14s_compound_target_keeps_all_four_thresholds() -> None:
+    protocol = _load_protocol_module()
+    payload = bytes.fromhex(
+        protocol.build_int14s_lan_target_dp_value(
+            food_mode="11",
+            food_high_f_tenths=1940,
+            food_low_f_tenths=500,
+            start_epoch_s=1,
+            ambient_mode="11",
+            ambient_high_f_tenths=1040,
+            ambient_low_f_tenths=410,
+        )
+    )
+    parsed = protocol.parse_int14s_lan_target_dp_value((payload + bytes([protocol.crc8_atm(payload)])).hex(), 1)
+
+    assert parsed is not None
+    assert parsed["mode_name"] == "range"
+    assert parsed["ambient_mode"] == "11"
+    assert parsed["target_high_f_tenths"] == 1940
+    assert parsed["target_low_f_tenths"] == 500
+    assert parsed["ambient_target_high_f_tenths"] == 1040
+    assert parsed["ambient_target_low_f_tenths"] == 410
+
+
 def test_int14s_lan_dp122_parses_crc_protected_target() -> None:
     protocol = _load_protocol_module()
     payload = bytes.fromhex(

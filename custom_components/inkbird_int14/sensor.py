@@ -270,6 +270,7 @@ BASE_DIAGNOSTIC_DESCRIPTIONS = [
     DiagnosticDescription("last_lan_write_err", "Last LAN Write Error Code"),
     DiagnosticDescription("target_write_validation_status", "Target Write Validation Status", enabled_default=True),
     DiagnosticDescription("target_write_validation_probe", "Target Write Validation Probe"),
+    DiagnosticDescription("target_write_validation_field", "Target Write Validation Field"),
     DiagnosticDescription(
         "target_write_validation_requested_c",
         "Target Write Validation Requested Temperature",

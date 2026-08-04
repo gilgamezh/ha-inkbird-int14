@@ -54,13 +54,16 @@ from .protocol import (
     c_tenths_to_f_tenths,
     diagnostic_snapshot_query_chunks,
     init_command_chunks,
+    normalize_target_mode,
     parse_battery_payload,
     parse_cloud_dps,
     parse_int11i_battery_payload,
     parse_int11i_temperature_payload,
     parse_int14s_lan_dps,
+    parse_int14s_lan_target_dp_value,
     parse_multisensor_temperature_payload,
     parse_notification,
+    target_mode_after_threshold_write,
     timer_epoch_values_plausible,
 )
 
@@ -921,11 +924,19 @@ class Int14Runtime:
             self._set_ble_connected(False)
             self._notify_listeners()
 
-    async def request_int14s_target_high_write_validation(self, probe: int, target_c: float) -> None:
-        """Write one INT-14S food high target through Tuya LAN for validation."""
+    async def request_int14s_target_write_validation(self, probe: int, field: str, target_c: float) -> None:
+        """Write one INT-14S target threshold through Tuya LAN for validation."""
         if self.profile.key != MODEL_INT14S_BW:
             raise ValueError("Target write validation is available only for INT-14S-BW")
         self._ensure_probe(probe)
+        field_map = {
+            "food_high": ("food", "high", "target_high_f_tenths"),
+            "food_low": ("food", "low", "target_low_f_tenths"),
+            "ambient_high": ("ambient", "high", "ambient_target_high_f_tenths"),
+            "ambient_low": ("ambient", "low", "ambient_target_low_f_tenths"),
+        }
+        if field not in field_map:
+            raise ValueError("target field is not supported")
         if not self.lan_enabled or self.lan_config is None or not self.lan_config.is_complete:
             raise ValueError("INT-14S target write validation requires complete Tuya LAN configuration")
         if target_c < 0 or target_c > 300:
@@ -933,8 +944,13 @@ class Int14Runtime:
 
         dp_id = str(121 + probe)
         target_f_tenths = c_tenths_to_f_tenths(round(target_c * 10))
-        current_mode = self.data.get(f"probe_{probe}_target_mode")
-        food_mode = "11" if current_mode in {"low", "range"} else "10"
+        group, threshold, data_suffix = field_map[field]
+        food_mode = normalize_target_mode(self.data.get(f"probe_{probe}_target_mode_code") or self.data.get(f"probe_{probe}_target_mode"))
+        ambient_mode = normalize_target_mode(self.data.get(f"probe_{probe}_ambient_target_mode"))
+        if group == "food":
+            food_mode = target_mode_after_threshold_write(food_mode, threshold)
+        else:
+            ambient_mode = target_mode_after_threshold_write(ambient_mode, threshold)
         degree_code_raw = self.data.get(f"probe_{probe}_target_degree_code")
         ambient_degree_code_raw = self.data.get(f"probe_{probe}_ambient_target_degree_code")
         try:
@@ -947,19 +963,30 @@ class Int14Runtime:
             ambient_degree_code = 0
         food_index_raw = self.data.get(f"probe_{probe}_target_food_index")
         ambient_food_index_raw = self.data.get(f"probe_{probe}_ambient_target_food_index")
+        target_values = {
+            "target_high_f_tenths": int(self.data.get(f"probe_{probe}_target_high_f_tenths") or 0),
+            "target_low_f_tenths": int(self.data.get(f"probe_{probe}_target_low_f_tenths") or 0),
+            "ambient_target_high_f_tenths": int(self.data.get(f"probe_{probe}_ambient_target_high_f_tenths") or 0),
+            "ambient_target_low_f_tenths": int(self.data.get(f"probe_{probe}_ambient_target_low_f_tenths") or 0),
+        }
+        target_values[data_suffix] = target_f_tenths
+        start_epoch_s = int(self.data.get(f"probe_{probe}_target_start_epoch_s") or time.time())
+        food_index = int(food_index_raw) if food_index_raw is not None else -1
+        ambient_food_index = int(ambient_food_index_raw) if ambient_food_index_raw is not None else -1
+        advance_value = int(self.data.get(f"probe_{probe}_advance_value") or 0)
         dp_value = build_int14s_lan_target_dp_value(
             food_mode=food_mode,
-            food_high_f_tenths=target_f_tenths,
-            food_low_f_tenths=int(self.data.get(f"probe_{probe}_target_low_f_tenths") or 0),
+            food_high_f_tenths=target_values["target_high_f_tenths"],
+            food_low_f_tenths=target_values["target_low_f_tenths"],
             degree_code=degree_code,
-            food_index=int(food_index_raw) if food_index_raw is not None else -1,
-            start_epoch_s=int(self.data.get(f"probe_{probe}_target_start_epoch_s") or time.time()),
-            ambient_mode=str(self.data.get(f"probe_{probe}_ambient_target_mode") or "00"),
-            ambient_high_f_tenths=int(self.data.get(f"probe_{probe}_ambient_target_high_f_tenths") or 0),
-            ambient_low_f_tenths=int(self.data.get(f"probe_{probe}_ambient_target_low_f_tenths") or 0),
+            food_index=food_index,
+            start_epoch_s=start_epoch_s,
+            ambient_mode=ambient_mode,
+            ambient_high_f_tenths=target_values["ambient_target_high_f_tenths"],
+            ambient_low_f_tenths=target_values["ambient_target_low_f_tenths"],
             ambient_degree_code=ambient_degree_code,
-            ambient_food_index=int(ambient_food_index_raw) if ambient_food_index_raw is not None else -1,
-            advance_value=int(self.data.get(f"probe_{probe}_advance_value") or 0),
+            ambient_food_index=ambient_food_index,
+            advance_value=advance_value,
         )
         prefix = "target_write_validation"
         self.data.update(
@@ -967,6 +994,7 @@ class Int14Runtime:
                 f"{prefix}_active": True,
                 f"{prefix}_last_run_epoch_s": int(time.time()),
                 f"{prefix}_probe": probe,
+                f"{prefix}_field": field,
                 f"{prefix}_requested_c": round(float(target_c), 1),
                 f"{prefix}_requested_f_tenths": target_f_tenths,
                 f"{prefix}_dp": dp_id,
@@ -1003,21 +1031,60 @@ class Int14Runtime:
                 readback, summary = await self.hass.async_add_executor_job(fetch_lan_dps, self.lan_config)
                 self.data["local_lan_dp_count"] = summary.get("dps_count")
                 self.data["local_lan_dp_keys"] = ",".join(summary.get("dps_keys") or [])
-                if dp_id in readback:
+                parsed_target = parse_int14s_lan_target_dp_value(readback.get(dp_id), probe)
+                if parsed_target is not None:
                     self.apply_lan_dps(readback)
-                    actual = self.data.get(f"probe_{probe}_target_high_f_tenths")
-                    self.data[f"{prefix}_readback_available"] = actual is not None
-                    self.data[f"{prefix}_readback_matches"] = actual == target_f_tenths if actual is not None else None
+                    actual = parsed_target.get(data_suffix)
+                    self.data[f"{prefix}_readback_available"] = True
+                    self.data[f"{prefix}_readback_matches"] = actual == target_f_tenths
                     self.data[f"{prefix}_status"] = "confirmed_by_readback" if actual == target_f_tenths else "readback_mismatch"
                 else:
                     self.data[f"{prefix}_status"] = "awaiting_visual_confirmation"
+                    mode_names = {"00": "off", "01": "low", "10": "high", "11": "range"}
+                    self.data.update(
+                        {
+                            f"probe_{probe}_target_mode_code": food_mode,
+                            f"probe_{probe}_target_mode": mode_names[food_mode],
+                            f"probe_{probe}_target_high_f_tenths": target_values["target_high_f_tenths"],
+                            f"probe_{probe}_target_low_f_tenths": target_values["target_low_f_tenths"],
+                            f"probe_{probe}_target_degree_code": f"{degree_code:02x}",
+                            f"probe_{probe}_target_food_index": food_index,
+                            f"probe_{probe}_target_start_epoch_s": start_epoch_s,
+                            f"probe_{probe}_ambient_target_mode": ambient_mode,
+                            f"probe_{probe}_ambient_target_high_f_tenths": target_values["ambient_target_high_f_tenths"],
+                            f"probe_{probe}_ambient_target_low_f_tenths": target_values["ambient_target_low_f_tenths"],
+                            f"probe_{probe}_ambient_target_degree_code": f"{ambient_degree_code:02x}",
+                            f"probe_{probe}_ambient_target_food_index": ambient_food_index,
+                            f"probe_{probe}_advance_value": advance_value,
+                            f"probe_{probe}_target_state_source": "accepted_lan_command",
+                        }
+                    )
             except Exception as exc:  # noqa: BLE001
                 self.data[f"{prefix}_status"] = "failed"
                 self.data[f"{prefix}_error"] = str(exc)[:200]
                 raise
             finally:
                 self.data[f"{prefix}_active"] = False
+                history = list(self.data.get(f"{prefix}_history") or [])
+                history.append(
+                    {
+                        "last_run_epoch_s": self.data.get(f"{prefix}_last_run_epoch_s"),
+                        "probe": probe,
+                        "field": field,
+                        "requested_c": self.data.get(f"{prefix}_requested_c"),
+                        "command_sent": self.data.get(f"{prefix}_command_sent"),
+                        "readback_available": self.data.get(f"{prefix}_readback_available"),
+                        "readback_matches": self.data.get(f"{prefix}_readback_matches"),
+                        "status": self.data.get(f"{prefix}_status"),
+                        "error": self.data.get(f"{prefix}_error"),
+                    }
+                )
+                self.data[f"{prefix}_history"] = history[-8:]
                 self._notify_listeners()
+
+    async def request_int14s_target_high_write_validation(self, probe: int, target_c: float) -> None:
+        """Keep the beta.11 food-high validation API compatible."""
+        await self.request_int14s_target_write_validation(probe, "food_high", target_c)
 
     async def write_ble_command(self, payload: bytes, *, request_readback: bool = True) -> bool:
         if self.profile.write_support == "not_supported":

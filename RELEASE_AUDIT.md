@@ -25,7 +25,7 @@ Do not describe prerelease behavior as part of the latest stable release. INT-14
 
 INT-14-BW remains the only profile with the full tested combination of BLE snapshots, Tuya LAN polling and mapped local writes.
 
-INT-14S-BW exposes 20 mapped temperatures and battery readings over read-only BLE. Beta.7 added experimental read-only Tuya LAN temperatures from CRC-validated DP109, and a real beta.7 Home Assistant report confirmed station plus undocked-probe readings. Beta.8 removes known stale entities left by an earlier incompatible profile selection. Beta.9 adds CRC-validated read-only station/probe battery percentages from DP103. Beta.10 adds read-only DP104 display brightness after a real capture matched the configured 85% value. Beta.11 adds four disabled-by-default, LAN-only food high target validation entities backed by the model-specific DP122-125 compound payload. LAN charging/state DPs, cloud, normal writes and unverified protocol-state entities remain disabled.
+INT-14S-BW exposes 20 mapped temperatures and battery readings over read-only BLE. Beta.7 added experimental read-only Tuya LAN temperatures from CRC-validated DP109, and a real beta.7 Home Assistant report confirmed station plus undocked-probe readings. Beta.8 removes known stale entities left by an earlier incompatible profile selection. Beta.9 adds CRC-validated read-only station/probe battery percentages from DP103. Beta.10 adds read-only DP104 display brightness after a real capture matched the configured 85% value. A real beta.11 Probe 1 test confirmed the LAN food-high target write at 90 C. Beta.12 expands the disabled-by-default DP122-125 validation to food high/low and ambient high/low while preserving prior accepted values. LAN charging/state DPs, cloud, normal writes and unverified protocol-state entities remain disabled.
 
 INT-12E-BW exposes ten mapped temperatures, station temperature and battery readings over read-only BLE. Notifications are applied immediately; configurable direct reads are only a fallback. The device may close sessions after about 30 seconds with reason `0x13`, and the integration reconnects automatically. Food 4 is confirmed as the tip channel on both probes; Food 1-3 still need physical mapping.
 
@@ -66,13 +66,13 @@ Run these checks again immediately before tagging a release:
 - `trufflehog filesystem . --no-update --fail --no-verification`
 - cache audit for `.pytest_cache`, `.ruff_cache`, `__pycache__`, `*.pyc` and `*.pyo`
 
-For this 2026-08-03 review, Ruff format/check, compileall and all 57 tests passed. Gitleaks and TruffleHog reported no secrets. Detect-secrets reported eight expected keyword matches for the `cloud_api_key` and `cloud_api_secret` field names in constants and translations; no credential values were present. The submitted INT-14S beta.10 runtime report was also checked before analysis: host, BLE address, device ID and local key were redacted. No test or bytecode cache remains in the repository.
+For this 2026-08-04 review, Ruff format/check, compileall and all 60 tests passed. Gitleaks and TruffleHog reported no secrets. Detect-secrets reported eight expected keyword matches for the `cloud_api_key` and `cloud_api_secret` field names in constants and translations; no credential values were present. The submitted INT-14S beta.11 runtime report was also checked before analysis: host, BLE address, device ID and local key were redacted. No test or bytecode cache remains in the repository.
 
 ## Remaining Risks
 
 - INT-12E-BW needs a controlled physical mapping for Food 1-3.
 - INT-14S-BW read-only LAN temperatures are validated from a sanitized capture and a real beta.7 runtime report. Longer reconnect and dock/undock testing is still useful.
-- INT-14S-BW unit write validation is awaiting a real-device prerelease report; other writes remain blocked.
+- INT-14S-BW food-high LAN target writing is community validated. Food-low and ambient high/low remain opt-in beta.12 tests; normal controls and unrelated writes stay blocked.
 - INT-11I-B support is based on limited community hardware validation.
 - Tuya local keys must be obtained and protected by each device owner.
 - Battery percentages are station-reported values and may remain at 100% for long periods.

@@ -5,6 +5,14 @@
 - Mark INT-12E-BW BLE temperature/battery transport as community validated after stable real-device notification, fallback-read and reconnect testing.
 - Rename the polling option to `BLE fallback direct-read interval`, clarifying that valid BLE notifications can update entities more frequently than the configured fallback cadence.
 
+## 0.2.6-beta.12
+
+- Mark the beta.11 INT-14S-BW food-high LAN write as community validated after a real Probe 1 test applied 90 C and the station displayed the high-target indication.
+- Expand the disabled-by-default validation controls to food high, food low, ambient high and ambient low for each physical probe.
+- Preserve every previously accepted threshold in the 20-byte DP122-125 target block when the next threshold is written, even when the station omits the target DP from immediate read-back.
+- Add a bounded diagnostic history for the last eight target tests so one final diagnostics file can cover a complete four-threshold sequence.
+- Preserve the beta.11 food-high entity unique IDs and keep all validation LAN-only, with no BLE fallback or normal INT-14S controls yet.
+
 ## 0.2.6-beta.11
 
 - Add a model-specific parser and builder for the 20-byte INT-14S-BW target blocks carried by DP122-125.

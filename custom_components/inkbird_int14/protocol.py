@@ -278,6 +278,23 @@ def build_int14s_lan_target_dp_value(
     return payload.hex()
 
 
+def normalize_target_mode(current_mode: Any) -> str:
+    """Normalize a target mode name or code to the two-digit wire value."""
+    aliases = {"off": "00", "low": "01", "high": "10", "range": "11"}
+    mode = aliases.get(str(current_mode).lower(), str(current_mode).lower())
+    return mode if mode in {"00", "01", "10", "11"} else "00"
+
+
+def target_mode_after_threshold_write(current_mode: Any, threshold: str) -> str:
+    """Return the target mode after enabling one high or low threshold."""
+    mode = normalize_target_mode(current_mode)
+    if threshold == "high":
+        return "11" if mode in {"01", "11"} else "10"
+    if threshold == "low":
+        return "11" if mode in {"10", "11"} else "01"
+    raise ValueError("threshold must be high or low")
+
+
 def build_pre_alarm_dp_value(probe: int, advance_values: list[int]) -> str:
     return _single_command_payload(build_pre_alarm_command(probe, advance_values), 0x23).hex()
 
