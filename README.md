@@ -28,16 +28,16 @@ Product image is included only as a device reference. Inkbird names, logos and t
 - Exposes mapped probe temperatures, station temperature, target values, transport status, local availability and selected battery/state indicators for supported profiles.
 - INT-11I-B has experimental read-only BLE GATT-poll support for one probe temperature and base/probe battery from a community validation report.
 - INT-14S-BW has community-validated read-only BLE support and experimental read-only Tuya LAN support for 20 mapped temperatures, station/probe batteries and display brightness: four food sensors plus ambient on each of four physical probes.
-- INT-12E-BW has community-validated read-only BLE support in the `v0.2.6` prerelease line for 10 mapped temperatures: four food sensors plus ambient on each of two physical probes. Notifications update entities immediately, while fallback direct GATT reads run every 10 seconds by default.
+- INT-12E-BW has community-validated read-only BLE support in stable `v0.2.6` for 10 mapped temperatures: four food sensors plus ambient on each of two physical probes. Notifications update entities immediately, while fallback direct GATT reads run every 10 seconds by default.
 - Models with multi-sensor probes are represented with their expected physical-probe and temperature-channel layout, but live entities are created only for channels mapped by the current parser.
 
 ## Status
 
 Public HACS custom repository for the modern INT family. INT-14-BW is the tested baseline; INT-14S-BW and INT-12E-BW provide community-validated read-only BLE support, and INT-14S has experimental read-only Tuya LAN temperatures. Check the model table before assuming that another profile has live readings or controls.
 
-The latest stable release is `v0.2.5`. INT-12E-BW support, experimental read-only INT-14S-BW Tuya LAN temperatures and the guarded INT-14S unit-write experiment are currently available only in the `v0.2.6` prerelease line.
+The latest stable release is `v0.2.6`. It includes community-validated INT-12E-BW BLE support and INT-14S-BW BLE plus experimental read-only Tuya LAN support.
 
-Starting with `v0.2.6-beta.8`, reloading a reconfigured entry removes known stale entities that belong to an incompatible previous model profile. This is intentionally narrow: valid temperature, battery, transport and diagnostic entities keep their existing unique IDs.
+Starting with `v0.2.6`, reloading a reconfigured entry removes known stale entities that belong to an incompatible previous model profile. This is intentionally narrow: valid temperature, battery, transport and diagnostic entities keep their existing unique IDs.
 
 Repository:
 
@@ -169,7 +169,7 @@ Noisy raw diagnostics and fragile fields that are often unknown are marked diagn
 
 The profile diagnostics include physical probe count, expected temperature channel count and mapped live temperature channel count. Cataloged profiles with no validated parser mapping do not create placeholder temperature entities for every expected channel.
 
-Cataloged profiles include passive BLE inspection. INT-14S-BW retains separate BLE diagnostics, a read-only Tuya LAN DP capture and guarded prerelease write-validation controls for protocol work. Its beta.7 LAN runtime accepts only CRC-validated DP109 temperatures; write-validation controls remain disabled by default. See `docs/ble_diagnostics.md` and `docs/lan_diagnostics.md` before testing or sharing a sanitized capture.
+Cataloged profiles include passive BLE inspection. INT-14S-BW retains separate BLE diagnostics, a read-only Tuya LAN DP capture and guarded write-validation controls for protocol work. Its LAN runtime accepts only CRC-validated DP109 temperatures; write-validation controls remain disabled by default. See `docs/ble_diagnostics.md` and `docs/lan_diagnostics.md` before testing or sharing a sanitized capture.
 
 Battery values remain numeric when a fresh INT-14 battery snapshot exists. Repeated 100% probe reports are flagged through `Battery Report Quality` and suspect binary sensors instead of hiding the battery value. Local testing showed that the station can still report all probe batteries as 100% after successful BLE authentication, so those values should be treated as station-reported rather than independently verified probe fuel gauges.
 
@@ -250,7 +250,7 @@ example-local-key
 - Cloud live data, cloud battery/state and cloud writes are not supported.
 - Model support is profile-specific. A known probe layout does not by itself mean that live parsing or writes are supported.
 - Cataloged multi-sensor profiles may show an expected channel layout without exposing live temperature entities.
-- INT-14S-BW supports BLE temperature/battery readings and experimental read-only Tuya LAN temperatures, DP103 station/probe batteries and DP104 display brightness. The beta.11 food-high LAN write is community validated. `v0.2.6-beta.13` provides serialized, disabled-by-default validation controls for food high/low and ambient high/low on each probe, plus a bounded test history. It supersedes beta.12, which could expose unset `0 F` fields as `-17.8 C` and mix diagnostics when controls were triggered rapidly. These remain opt-in hardware tests, not general write support. LAN charging/state fields, cloud history and all other settings writes remain disabled until their model-specific DPs are validated.
+- INT-14S-BW supports BLE temperature/battery readings and experimental read-only Tuya LAN temperatures, DP103 station/probe batteries and DP104 display brightness. The Probe 1 food-high LAN write is community validated. Stable `v0.2.6` includes serialized, disabled-by-default validation controls for food high/low and ambient high/low on each probe, plus a bounded test history. These remain opt-in hardware tests, not general write support. LAN charging/state fields, cloud history and all other settings writes remain disabled until their model-specific DPs are validated.
 - INT-12E-BW currently supports read-only BLE temperature/battery updates. Valid notifications are applied immediately; fallback direct GATT reads run every 10 seconds by default and can be configured from 5 to 300 seconds. The station may end sessions after about 30 seconds, after which the integration reconnects automatically. Tuya LAN, cloud, writes and protocol-state entities remain disabled.
 
 ## Alternatives

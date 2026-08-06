@@ -1,6 +1,6 @@
 # Release Audit
 
-Last reviewed: 2026-08-03
+Last reviewed: 2026-08-06
 
 ## Public Positioning
 
@@ -17,9 +17,9 @@ The integration supports local BLE, local Tuya LAN where the model and DP map ha
 
 ## Release State
 
-The latest stable release is `v0.2.5`. The `v0.2.6` prerelease line adds the community-validated INT-12E-BW connected BLE path, guarded INT-14S-BW unit-write validation and experimental read-only INT-14S Tuya LAN temperatures.
+Stable `v0.2.6` includes the community-validated INT-12E-BW connected BLE path, community-validated INT-14S-BW BLE, experimental read-only INT-14S Tuya LAN data and guarded INT-14S-BW write validation.
 
-Do not describe prerelease behavior as part of the latest stable release. INT-14S-BW's normal runtime remains read-only; its Celsius/Fahrenheit validation buttons are diagnostic, disabled by default and not proof of general write support.
+INT-14S-BW's normal runtime remains read-only. Its unit and alarm-threshold validation controls are diagnostic, disabled by default and not proof of general write support.
 
 ## Model Boundaries
 
@@ -66,13 +66,13 @@ Run these checks again immediately before tagging a release:
 - `trufflehog filesystem . --no-update --fail --no-verification`
 - cache audit for `.pytest_cache`, `.ruff_cache`, `__pycache__`, `*.pyc` and `*.pyo`
 
-For this 2026-08-04 review, Ruff format/check, compileall and all 60 tests passed. Gitleaks and TruffleHog reported no secrets. Detect-secrets reported eight expected keyword matches for the `cloud_api_key` and `cloud_api_secret` field names in constants and translations; no credential values were present. The submitted INT-14S beta.11 runtime report was also checked before analysis: host, BLE address, device ID and local key were redacted. No test or bytecode cache remains in the repository.
+For this 2026-08-06 stable-release review, Ruff format/check, compileall and all 60 tests passed. Gitleaks and TruffleHog reported no secrets. Detect-secrets reported eight expected keyword matches for the `cloud_api_key` and `cloud_api_secret` field names in constants and translations; no credential values were present. The submitted INT-14S runtime reports were checked before analysis: host, BLE address, device ID and local key were redacted. No test or bytecode cache remains in the repository.
 
 ## Remaining Risks
 
 - INT-12E-BW needs a controlled physical mapping for Food 1-3.
-- INT-14S-BW read-only LAN temperatures are validated from a sanitized capture and a real beta.7 runtime report. Longer reconnect and dock/undock testing is still useful.
-- INT-14S-BW food-high LAN target writing is community validated. Food-low and ambient high/low remain opt-in beta.13 tests; normal controls and unrelated writes stay blocked.
+- INT-14S-BW read-only LAN temperatures, batteries and display brightness are validated from sanitized captures and real runtime reports. Longer reconnect and dock/undock testing is still useful.
+- INT-14S-BW Probe 1 food-high LAN target writing is community validated by the station's `H` indication and audible alarm. Food-low and ambient high/low remain opt-in diagnostic tests; normal controls and unrelated writes stay blocked.
 - INT-11I-B support is based on limited community hardware validation.
 - Tuya local keys must be obtained and protected by each device owner.
 - Battery percentages are station-reported values and may remain at 100% for long periods.

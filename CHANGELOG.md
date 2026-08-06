@@ -2,7 +2,14 @@
 
 ## Unreleased
 
-- Mark INT-12E-BW BLE temperature/battery transport as community validated after stable real-device notification, fallback-read and reconnect testing.
+## 0.2.6
+
+- Promote INT-12E-BW read-only BLE temperature and battery support after stable community testing of notifications, fallback reads and automatic reconnects.
+- Promote INT-14S-BW local support with community-validated BLE temperatures/batteries and CRC-checked, read-only Tuya LAN temperatures, batteries and display brightness.
+- Keep INT-14S-BW normal operation read-only. Its LAN alarm-threshold controls remain advanced diagnostics, disabled by default and LAN-only.
+- Mark the INT-14S-BW Probe 1 food-high write as hardware validated after the station displayed `H` and sounded the alarm.
+- Preserve the beta.13 fixes that serialize DP122-125 target writes and keep inactive raw `0 F` thresholds unavailable.
+- Remove stale entities that belong to an incompatible model profile after reconfiguration while preserving valid entity IDs.
 - Rename the polling option to `BLE fallback direct-read interval`, clarifying that valid BLE notifications can update entities more frequently than the configured fallback cadence.
 
 ## 0.2.6-beta.13

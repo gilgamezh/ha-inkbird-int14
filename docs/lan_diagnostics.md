@@ -16,9 +16,9 @@ The first 54 bytes use the same field order, scales and unavailable-probe sentin
 
 ## Testing Beta.7
 
-`v0.2.6-beta.7` enables experimental read-only Tuya LAN temperatures:
+Stable `v0.2.6` enables experimental read-only Tuya LAN temperatures:
 
-1. Install beta.7 through HACS and restart Home Assistant.
+1. Install the latest stable release through HACS and restart Home Assistant.
 2. Select the correct `INT-14S-BW` model profile.
 3. Enter the station host/IP, device ID, local key and protocol version in the integration options.
 4. Select `Wi-Fi LAN only` for a clear LAN-only test, or leave `Auto` to prefer the configured LAN path.
@@ -38,7 +38,7 @@ The capture performs the same class of local Tuya state queries used for polling
 - one status request;
 - one requested-DP refresh.
 
-The diagnostic button does not call setting-write functions and does not apply its captured values to Home Assistant entities. The separate beta.7 polling path applies only DP109 after validating its exact length and CRC.
+The diagnostic button does not call setting-write functions and does not apply its captured values to Home Assistant entities. The normal polling path applies only supported DPs after validating their type, length and CRC where applicable.
 
 ## What It Records
 
@@ -62,8 +62,8 @@ All normal INT-14S writes remain blocked. The disabled-by-default BLE C/F valida
 
 `v0.2.6-beta.11` added one disabled-by-default diagnostic number per physical probe: `Validate LAN Write: Probe N Food High Target`. A community hardware test confirmed that Probe 1 accepted a 90 C target and showed the high-target indication on the station.
 
-`v0.2.6-beta.13` adds Food Low, Ambient High and Ambient Low beside the existing Food High control for every probe. It supersedes beta.12: target operations are now serialized from payload construction through history recording, and raw zero fields remain unavailable while their threshold mode is disabled instead of appearing as `-17.8 C`. The validation is available only with complete INT-14S Tuya LAN configuration and never falls back to BLE. Each accepted command preserves the other thresholds in the same compound block. Diagnostics report `confirmed_by_readback` only if the station returns the DP and the decoded target matches; otherwise they report `awaiting_visual_confirmation`.
+Stable `v0.2.6` includes Food Low, Ambient High and Ambient Low beside the existing Food High control for every probe. Target operations are serialized from payload construction through history recording, and raw zero fields remain unavailable while their threshold mode is disabled instead of appearing as `-17.8 C`. The validation is available only with complete INT-14S Tuya LAN configuration and never falls back to BLE. Each accepted command preserves the other thresholds in the same compound block. Diagnostics report `confirmed_by_readback` only if the station returns the DP and the decoded target matches; otherwise they report `awaiting_visual_confirmation`.
 
 For one compact test, use an idle Probe 1 and enable only its four validation controls. Set Food High to 90 C, Food Low to 10 C, Ambient High to 40 C and Ambient Low to 5 C, in that order. Wait a few seconds after each value and note what the station displays. Download one integration diagnostics file after the fourth write; its bounded history contains all four attempts. Smart Life does not expose Inkbird's cooking controls, so the station display is the useful visual check.
 
-Normal target controls, pre-alarm writes and all other INT-14S settings remain disabled until this expanded sequence is confirmed on real hardware.
+Normal target controls, pre-alarm writes and all other INT-14S settings remain disabled. The diagnostic controls are not the finished settings UI.

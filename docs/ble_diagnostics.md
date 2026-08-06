@@ -45,13 +45,13 @@ Run this capture with at least one probe awake and outside the charging dock. Ke
 
 For INT-14S-BW, `FF01` has four 13-byte probe blocks followed by a two-byte station temperature. The confirmed field order in each block is Internal aggregate, Food 1, Food 2, Food 3, Food 4, Ambient and one status byte. Internal/Food values use Fahrenheit hundredths; Ambient and station temperature use Fahrenheit tenths. Docked or unavailable probes use the `0x7FFE` temperature sentinel.
 
-The live parser was introduced in `v0.2.3-beta.3` and community validated for stable `v0.2.3`. Home Assistant creates 20 mapped temperature entities: Food 1-4 and Ambient for each physical probe. The separate Internal aggregate is retained in diagnostics and does not count as another physical sensor. Inherited protocol-state entities are hidden because the INT-14S charging/connection/pairing/alarm bit map is not validated. Experimental read-only Tuya LAN temperatures are available from `v0.2.6-beta.7`; cloud and all normal setting writes remain disabled.
+The live parser was introduced in `v0.2.3-beta.3` and community validated for stable `v0.2.3`. Home Assistant creates 20 mapped temperature entities: Food 1-4 and Ambient for each physical probe. The separate Internal aggregate is retained in diagnostics and does not count as another physical sensor. Inherited protocol-state entities are hidden because the INT-14S charging/connection/pairing/alarm bit map is not validated. Experimental read-only Tuya LAN temperatures are included in stable `v0.2.6`; cloud and all normal setting writes remain disabled.
 
 The downloaded diagnostic includes sanitized service/characteristic metadata, readable values and notification payloads. Bluetooth addresses and IPv4 addresses embedded in errors are redacted.
 
 ## INT-12E-BW live BLE behavior
 
-INT-12E-BW has community-validated read-only BLE support in the `v0.2.6` prerelease line. It exposes ten temperatures from two physical probes: Food 1-4 and Ambient for each probe, plus station temperature and the three battery values reported by GATT.
+INT-12E-BW has community-validated read-only BLE support in stable `v0.2.6`. It exposes ten temperatures from two physical probes: Food 1-4 and Ambient for each probe, plus station temperature and the three battery values reported by GATT.
 
 While connected, valid notifications are applied immediately and have been observed roughly every three seconds. The configurable `BLE fallback direct-read interval` does not throttle those notifications. It controls only the safety-net read of the temperature and battery characteristics when no fresh notification has arrived; the default is 10 seconds and the allowed range is 5-300 seconds.
 
@@ -61,13 +61,13 @@ INT-12E-BW remains read-only. It does not expose LAN, cloud, settings writes or 
 
 ## Experimental INT-14S unit write validation
 
-`v0.2.6-beta.1` adds two disabled-by-default diagnostic buttons for INT-14S-BW only:
+Stable `v0.2.6` retains two disabled-by-default diagnostic buttons for INT-14S-BW only:
 
 - `Validate BLE Write: Set Celsius`;
 - `Validate BLE Write: Set Fahrenheit`.
 
 These buttons do not enable the integration's normal write layer. Each run opens an authenticated BLE session, sends only the station-wide unit opcode, follows it with the already reviewed read/snapshot queries and records whether a unit readback was available. BLE accepting the command is not proof that the station changed, so the tester must still compare the station display before and after pressing the button.
 
-For a reversible test, note the current unit, press the opposite-unit button, confirm the display changed, then press the original-unit button and confirm it was restored. Download fresh integration diagnostics after each press. Do not test target, alarm, timer, calibration, display or pairing writes with this prerelease; those remain blocked.
+For a reversible test, note the current unit, press the opposite-unit button, confirm the display changed, then press the original-unit button and confirm it was restored. Download fresh integration diagnostics after each press. These buttons do not enable general target, alarm, timer, calibration, display or pairing writes.
 
 Do not post unredacted Home Assistant logs. Before sharing diagnostics or screenshots, verify that they contain no addresses, network names, device IDs, local keys, tokens, account data or private entity IDs.
