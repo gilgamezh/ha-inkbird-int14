@@ -35,7 +35,7 @@ Product image is included only as a device reference. Inkbird names, logos and t
 
 Public HACS custom repository for the modern INT family. INT-14-BW is the tested baseline; INT-14S-BW and INT-12E-BW provide community-validated read-only BLE support, and INT-14S has experimental read-only Tuya LAN temperatures. Check the model table before assuming that another profile has live readings or controls.
 
-The latest stable release is `v0.2.6`. It includes community-validated INT-12E-BW BLE support and INT-14S-BW BLE plus experimental read-only Tuya LAN support.
+The latest stable release is `v0.2.7`. It fixes opening Options and changing settings or transport on current Home Assistant versions. It retains community-validated INT-12E-BW BLE support and INT-14S-BW BLE plus experimental read-only Tuya LAN support.
 
 Starting with `v0.2.6`, reloading a reconfigured entry removes known stale entities that belong to an incompatible previous model profile. This is intentionally narrow: valid temperature, battery, transport and diagnostic entities keep their existing unique IDs.
 

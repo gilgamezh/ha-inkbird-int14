@@ -2,6 +2,13 @@
 
 ## Unreleased
 
+## 0.2.7
+
+- Fix competing reloads when changing the transport or other settings through Reconfigure (issue #5). Reloads now use Home Assistant's config-entry manager, which also removes the previous update listener.
+- Keep the runtime available if Home Assistant cannot unload the entity platforms.
+- Fix opening Options on current Home Assistant versions by using the config entry supplied by the options-flow framework.
+- Verify the fixes on Home Assistant Core 2026.10.1 with an existing INT-14-BW entry: Options, saving/restoring the BLE interval, Auto/BLE transport changes and a managed reload. Device/entity identities and effective settings were preserved. Hardware was offline during this lifecycle test.
+
 ## 0.2.6
 
 - Promote INT-12E-BW read-only BLE temperature and battery support after stable community testing of notifications, fallback reads and automatic reconnects.

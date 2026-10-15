@@ -227,7 +227,7 @@ class InkbirdInt14ConfigFlow(config_entries.ConfigFlow, domain=DOMAIN):
 
     @staticmethod
     def async_get_options_flow(config_entry: config_entries.ConfigEntry) -> config_entries.OptionsFlow:
-        return InkbirdInt14OptionsFlow(config_entry)
+        return InkbirdInt14OptionsFlow()
 
     async def _async_test_lan_config(self, user_input: dict[str, Any], errors: dict[str, str]) -> None:
         if not user_input.get(CONF_LAN_TEST_ON_SETUP):
@@ -270,13 +270,17 @@ class InkbirdInt14ConfigFlow(config_entries.ConfigFlow, domain=DOMAIN):
             await self._async_test_lan_config(user_input, errors)
             if not errors:
                 data = _entry_data_from_input(user_input)
+                has_update_listener = bool(entry.update_listeners)
                 self.hass.config_entries.async_update_entry(
                     entry,
                     title=data[CONF_NAME],
                     data={**entry.data, **data},
                     options=_options_without_reconfigured_keys(dict(entry.options)),
                 )
-                await self.hass.config_entries.async_reload(entry.entry_id)
+                # Loaded entries reload through their update listener. An unloaded
+                # entry has no listener and must be scheduled explicitly.
+                if not has_update_listener:
+                    self.hass.config_entries.async_schedule_reload(entry.entry_id)
                 return self.async_abort(reason="reconfigure_successful")
 
         return self.async_show_form(
@@ -287,9 +291,6 @@ class InkbirdInt14ConfigFlow(config_entries.ConfigFlow, domain=DOMAIN):
 
 
 class InkbirdInt14OptionsFlow(config_entries.OptionsFlow):
-    def __init__(self, config_entry: config_entries.ConfigEntry) -> None:
-        self.config_entry = config_entry
-
     def _defaults(self) -> dict[str, Any]:
         return {**self.config_entry.data, **self.config_entry.options}
 

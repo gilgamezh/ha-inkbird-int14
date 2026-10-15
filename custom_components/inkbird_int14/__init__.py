@@ -484,13 +484,15 @@ async def async_setup_entry(hass: HomeAssistant, entry: ConfigEntry) -> bool:
 
 async def async_unload_entry(hass: HomeAssistant, entry: ConfigEntry) -> bool:
     unload_ok = await hass.config_entries.async_unload_platforms(entry, PLATFORMS)
-    runtime = hass.data[DOMAIN].pop(entry.entry_id)
-    await runtime.stop()
+    if unload_ok:
+        runtimes = hass.data.get(DOMAIN, {})
+        runtime = runtimes.get(entry.entry_id)
+        if runtime is not None:
+            await runtime.stop()
+            runtimes.pop(entry.entry_id)
     return unload_ok
 
 
-async def async_reload_entry(hass: HomeAssistant, entry: ConfigEntry) -> bool:
-    unload_ok = await async_unload_entry(hass, entry)
-    if not unload_ok:
-        return False
-    return await async_setup_entry(hass, entry)
+async def async_reload_entry(hass: HomeAssistant, entry: ConfigEntry) -> None:
+    """Let Home Assistant serialize reloads and remove the old update listener."""
+    hass.config_entries.async_schedule_reload(entry.entry_id)
