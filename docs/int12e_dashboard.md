@@ -2,7 +2,7 @@
 
 This optional Lovelace example turns the five temperature channels from each INT-12E-BW probe into a more readable probe view.
 
-![INT-12E-BW community dashboard](images/community/int12e-dashboard.png)
+![INT-12E-BW community dashboard](https://raw.githubusercontent.com/zampix1/ha-inkbird-int14/main/docs/images/community/int12e-dashboard.png)
 
 The example was shared by [@Nexus1212](https://github.com/Nexus1212) in [Discussion #3](https://github.com/zampix1/ha-inkbird-int14/discussions/3#discussioncomment-17664834). It is a dashboard example, not a card installed automatically by the integration.
 

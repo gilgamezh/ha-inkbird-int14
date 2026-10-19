@@ -2,6 +2,14 @@
 
 ## Unreleased
 
+## 0.2.8
+
+- Refresh the GitHub/HACS presentation with a product photo, a sanitized INT-14 preview and the optional INT-12E community dashboard.
+- Use absolute public image URLs so media also loads when the README is rendered inside HACS.
+- Replace custom-repository installation steps with direct search in the default HACS catalog following inclusion through hacs/default#9786.
+- Add a shorter model support summary, clickable user guides and a dedicated configuration guide. Keep validated, experimental and cataloged profiles clearly separated.
+- Documentation-only release: thermometer runtime and protocol support are unchanged from 0.2.7.
+
 ## 0.2.7
 
 - Fix competing reloads when changing the transport or other settings through Reconfigure (issue #5). Reloads now use Home Assistant's config-entry manager, which also removes the previous update listener.

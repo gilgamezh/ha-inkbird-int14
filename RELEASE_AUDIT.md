@@ -1,6 +1,6 @@
 # Release Audit
 
-Last reviewed: 2026-10-15
+Last reviewed: 2026-10-19
 
 ## Public Positioning
 
@@ -17,7 +17,9 @@ The integration supports local BLE, local Tuya LAN where the model and DP map ha
 
 ## Release State
 
-Stable `v0.2.7` fixes Options initialization and competing config-entry reloads on current Home Assistant versions. It retains the community-validated INT-12E-BW connected BLE path, community-validated INT-14S-BW BLE, experimental read-only INT-14S Tuya LAN data and guarded INT-14S-BW write validation introduced in `v0.2.6`.
+Stable `v0.2.8` updates the public GitHub/HACS presentation and installation instructions following default-catalog inclusion. Runtime Python files are unchanged from `v0.2.7`; only the manifest version is bumped. It retains the Options/reload fixes from `v0.2.7` and the community-validated INT-12E-BW connected BLE path, community-validated INT-14S-BW BLE, experimental read-only INT-14S Tuya LAN data and guarded INT-14S-BW write validation introduced in `v0.2.6`.
+
+HACS default inclusion was approved and merged on 2026-10-18 through [hacs/default#9786](https://github.com/hacs/default/pull/9786). Users can now search for Inkbird INT directly. Images in the README use absolute public URLs so that HACS can display them without resolving GitHub-relative paths. HACS serves documentation for the installed or selected release, so an existing installation must update to see the new README.
 
 INT-14S-BW's normal runtime remains read-only. Its unit and alarm-threshold validation controls are diagnostic, disabled by default and not proof of general write support.
 
@@ -71,6 +73,8 @@ For this 2026-08-06 stable-release review, Ruff format/check, compileall and all
 The 2026-10-15 lifecycle smoke test reproduced the Options HTTP 500 on Home Assistant Core 2026.10.1 before applying the patch. Afterward, opening Options, saving and restoring the BLE interval, changing Auto/BLE transport and a managed reload all passed. Each setting change produced exactly one observed unload/setup cycle. The existing config entry, device and entity identities were preserved, effective settings were restored and no Inkbird errors appeared in the post-restart system log. Hardware was offline, so this test does not add protocol or device-write validation. The local suite passes all 68 tests, including eight lifecycle regression cases.
 
 For the `v0.2.7` pre-release checks on 2026-10-15, Ruff formatting/lint, compilation with bytecode outside the repository and all 68 tests passed. Gitleaks and TruffleHog found no secrets. Detect-secrets reported the same eight field-name matches for `cloud_api_key` and `cloud_api_secret`; manual inspection confirmed that these are constants and UI labels, not credentials. The cache audit found no remaining test, Ruff or bytecode caches.
+
+The `v0.2.8` presentation review on 2026-10-19 passed all 68 tests, Ruff formatting/lint and the cache audit. Gitleaks and TruffleHog found no secrets; detect-secrets reported only the same eight field-name matches. All seven README media URLs returned HTTP 200 and every linked repository file exists locally. The product image and both dashboard previews were visually reviewed. A diff against `v0.2.7` confirms that runtime Python files are unchanged. The linked English/Italian wiki installation guides were also updated for default-catalog installation.
 
 ## Remaining Risks
 
