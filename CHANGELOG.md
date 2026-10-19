@@ -2,6 +2,12 @@
 
 ## Unreleased
 
+## 0.2.9
+
+- Add official INT-14S-BW, INT-12E-BW and INT-11I-B product photos to the model guide, with explicit read-only and experimental support labels and source credits. No runtime or model-support changes.
+- Keep image links absolute for HACS and retain INT-14-BW as the tested baseline.
+- Documentation-only release: thermometer runtime, transports, settings controls and support levels are unchanged from 0.2.8.
+
 ## 0.2.8
 
 - Refresh the GitHub/HACS presentation with a product photo, a sanitized INT-14 preview and the optional INT-12E community dashboard.

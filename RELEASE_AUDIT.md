@@ -17,11 +17,17 @@ The integration supports local BLE, local Tuya LAN where the model and DP map ha
 
 ## Release State
 
-Stable `v0.2.8` updates the public GitHub/HACS presentation and installation instructions following default-catalog inclusion. Runtime Python files are unchanged from `v0.2.7`; only the manifest version is bumped. It retains the Options/reload fixes from `v0.2.7` and the community-validated INT-12E-BW connected BLE path, community-validated INT-14S-BW BLE, experimental read-only INT-14S Tuya LAN data and guarded INT-14S-BW write validation introduced in `v0.2.6`.
+Stable `v0.2.9` adds the community-tested model photo gallery to the public GitHub/HACS presentation. It retains the presentation and installation guides from `v0.2.8` following default-catalog inclusion. Runtime Python files are unchanged from `v0.2.7`; only the manifest version is bumped. It retains the Options/reload fixes from `v0.2.7` and the community-validated INT-12E-BW connected BLE path, community-validated INT-14S-BW BLE, experimental read-only INT-14S Tuya LAN data and guarded INT-14S-BW write validation introduced in `v0.2.6`.
 
 HACS default inclusion was approved and merged on 2026-10-18 through [hacs/default#9786](https://github.com/hacs/default/pull/9786). Users can now search for Inkbird INT directly. Images in the README use absolute public URLs so that HACS can display them without resolving GitHub-relative paths. HACS serves documentation for the installed or selected release, so an existing installation must update to see the new README.
 
 INT-14S-BW's normal runtime remains read-only. Its unit and alarm-threshold validation controls are diagnostic, disabled by default and not proof of general write support.
+
+The `v0.2.9` documentation-only release adds official INT-14S-BW, INT-12E-BW and INT-11I-B photos beside the model selection guide. Captions retain the existing support boundaries, including experimental INT-11I-B support. Image source pages and third-party ownership are recorded in `THIRD_PARTY_NOTICES.md`; no runtime, transport or write capability is changed.
+
+This gallery follow-up passed Ruff format/check, all 68 tests and `git diff --check`. All three downloaded assets are 700 x 700 JPEGs and were visually matched to their official model pages. A local Markdown/browser preview loaded all three photos at desktop and mobile widths; this is not a live Home Assistant rendering check.
+
+The `v0.2.9` pre-publication checks also passed compilation with bytecode outside the repository and the cache audit. Gitleaks and TruffleHog found no secrets. Detect-secrets reported only the same eight reviewed constant/UI-label matches for `cloud_api_key` and `cloud_api_secret`, not credential values. The component diff against `v0.2.8` contains only the manifest version change.
 
 ## Model Boundaries
 

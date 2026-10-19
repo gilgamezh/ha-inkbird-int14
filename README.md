@@ -22,6 +22,16 @@ Bring probe temperatures, battery readings and supported local controls into Hom
 
 Similar-looking stations do not always use the same protocol. Select the model printed on your device, rather than the closest-looking one.
 
+Alongside the INT-14-BW pictured above, these models have been tested by community members:
+
+| **INT-14S-BW** | **INT-12E-BW** | **INT-11I-B** |
+| :---: | :---: | :---: |
+| <img src="https://raw.githubusercontent.com/zampix1/ha-inkbird-int14/main/docs/images/int14s-product.jpg" alt="Blue INT-14S-BW base station with four wireless probes" width="200"> | <img src="https://raw.githubusercontent.com/zampix1/ha-inkbird-int14/main/docs/images/int12e-product.jpg" alt="INT-12E-BW base station with black and white wireless probes" width="200"> | <img src="https://raw.githubusercontent.com/zampix1/ha-inkbird-int14/main/docs/images/int11i-product.jpg" alt="White INT-11I-B charging base with one wireless probe" width="200"> |
+| 4 physical probes, **20 temperature channels** | 2 physical probes, **10 temperature channels** | 1 probe temperature mapped |
+| Community-validated readings; read-only in normal use | Community-validated BLE readings; read-only | Experimental community-tested BLE readings; read-only |
+
+*Photos identify the hardware, not the features supported by this integration. The table below shows which connections and controls are available for each model.*
+
 | Model | Probe temperatures | Connection | Current support |
 | --- | --- | --- | --- |
 | **INT-14-BW** | 4 probes, food + ambient each: **8 channels** | Local BLE and Tuya LAN | Tested baseline, including validated local controls. |
@@ -42,7 +52,7 @@ Inkbird INT is in the **default HACS catalog**. You do not need to add a custom 
 
 Already using an earlier version? Update through HACS and restart Home Assistant once. Keep your existing integration entry and thermometer pairing.
 
-The current stable release is **v0.2.8**. It updates this presentation and the HACS installation instructions. The Options and reconfiguration fixes from **v0.2.7** are included; thermometer protocol support is unchanged.
+The current stable release is **v0.2.9**. It adds product photos for the community-tested models to the GitHub/HACS presentation. The installation guides from **v0.2.8** and the Options and reconfiguration fixes from **v0.2.7** are included; thermometer protocol support is unchanged.
 
 Without HACS, follow the [manual installation steps](https://github.com/zampix1/ha-inkbird-int14/blob/main/docs/configuration.md#manual-installation).
 
@@ -129,7 +139,7 @@ If the integration is useful to you, a star or a [GitHub sponsorship](https://gi
 
 ## About This Project
 
-This is an independent community integration. It is **not affiliated with, endorsed by or supported by Inkbird**. The product photo identifies the tested hardware; Inkbird names, logos and trademarks belong to their respective owners.
+This is an independent community integration. It is **not affiliated with, endorsed by or supported by Inkbird**. Product photos identify the hardware; photo credits and source pages are listed in the [third-party notices](https://github.com/zampix1/ha-inkbird-int14/blob/main/THIRD_PARTY_NOTICES.md#product-photographs). Inkbird names, logos and trademarks belong to their respective owners.
 
 The repository keeps the name `ha-inkbird-int14` for continuity with the original INT-14-BW implementation, existing installs and links. Its public integration name is **Inkbird INT**; the Home Assistant domain remains `inkbird_int14`.
 
