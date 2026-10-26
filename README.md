@@ -8,6 +8,9 @@ Bring probe temperatures, battery readings and supported local controls into Hom
 [![Latest release](https://img.shields.io/github/v/release/zampix1/ha-inkbird-int14?label=release&color=18794e)](https://github.com/zampix1/ha-inkbird-int14/releases/latest)
 [![License: MIT](https://img.shields.io/github/license/zampix1/ha-inkbird-int14)](https://github.com/zampix1/ha-inkbird-int14/blob/main/LICENSE)
 
+[![Buy me a coffee](https://img.shields.io/badge/Buy_me_a_coffee-FFDD00?style=for-the-badge&logo=buymeacoffee&logoColor=black)](https://buymeacoffee.com/zampix1)
+[![GitHub Sponsors](https://img.shields.io/badge/GitHub_Sponsors-EA4AAA?style=for-the-badge&logo=githubsponsors&logoColor=white)](https://github.com/sponsors/zampix1)
+
 <p align="center">
   <img src="https://raw.githubusercontent.com/zampix1/ha-inkbird-int14/main/docs/images/int14-product.jpg" alt="Inkbird INT-14-BW base station with four wireless probes" width="480">
 </p>
@@ -52,7 +55,7 @@ Inkbird INT is in the **default HACS catalog**. You do not need to add a custom 
 
 Already using an earlier version? Update through HACS and restart Home Assistant once. Keep your existing integration entry and thermometer pairing.
 
-The current stable release is **v0.2.9**. It adds product photos for the community-tested models to the GitHub/HACS presentation. The installation guides from **v0.2.8** and the Options and reconfiguration fixes from **v0.2.7** are included; thermometer protocol support is unchanged.
+The current stable release is **v0.2.10**. It adds the optional **Cook Control** dashboard and its separate installation bundle, with native Echo announcements and TV text alerts. Existing integration fixes and model support are unchanged. Updating the integration does not install the dashboard or change your thermometer settings.
 
 Without HACS, follow the [manual installation steps](https://github.com/zampix1/ha-inkbird-int14/blob/main/docs/configuration.md#manual-installation).
 
@@ -66,7 +69,45 @@ The integration creates Home Assistant entities. You can use them in your own da
 
 *A sanitized presentation of captured INT-14-BW readings. This is an example, not a dashboard installed automatically by the integration.*
 
-### A Dashboard From The Community
+### Inkbird INT Cook Control
+
+Want a cooking view rather than a list of entities? **Cook Control** adds four
+probe cards, food/ambient diagrams, temperature history and separate HA targets.
+It can announce a target through an Echo and show a text popup on a TV. Both
+outputs were checked during a real INT-14-BW cook.
+
+![Cook Control during a real INT-14-BW cook: four probes, HA targets, separate station thresholds and reported batteries](https://raw.githubusercontent.com/zampix1/ha-inkbird-int14/main/docs/images/cook-control-live.png)
+
+<img src="https://raw.githubusercontent.com/zampix1/ha-inkbird-int14/main/docs/images/cook-control-probe-mobile.png" alt="Mobile probe detail: the INT-14-BW food and ambient sensors and temperature history" width="320">
+
+*Actual HA screenshots, framed to exclude home navigation and account details.
+Displayed targets are user settings, not cooking recommendations. The battery
+warning reflects the station's report; it is not an independently measured charge.*
+
+**Available as an optional download with v0.2.10.**
+Currently scoped to one INT-14-BW station. It does not install automatically,
+change pairing or write recipe targets to the station. Setup detects a single
+station and asks you to confirm it once.
+
+#### Install Cook Control
+
+1. Make sure the integration already shows the eight INT-14-BW temperatures. In HACS, install **button-card**, **card-mod** and **mini-graph-card**.
+2. [Download the Cook Control ZIP](https://github.com/zampix1/ha-inkbird-int14/releases/download/v0.2.10/inkbird-int-cook-control.zip). Back up HA, then extract it and copy `packages` and `www` into your HA configuration directory.
+3. Enable HA packages if needed, check the configuration and restart. Add `/local/inkbird-int/inkbird-int-cook-control.js?v=1.0.4` as a **JavaScript module** resource.
+4. Add the **Inkbird Cook Control** community dashboard, confirm your thermometer, then select your announcement outputs in Settings.
+
+First time using HA packages or dashboard resources? The guides show exactly what goes where, including the YAML to paste. **Do not load this package alongside another copy of the BBQ package.**
+
+Step-by-step guides:
+[English](https://github.com/zampix1/ha-inkbird-int14/blob/main/examples/cook_control/README.md) |
+[Italiano](https://github.com/zampix1/ha-inkbird-int14/blob/main/examples/cook_control/README.it.md) |
+[Tests and limits](https://github.com/zampix1/ha-inkbird-int14/blob/main/examples/cook_control/VALIDATION.md).
+
+The dashboard is maintained here on a visual base adapted from Remco's work.
+[Sources and licenses](https://github.com/zampix1/ha-inkbird-int14/blob/main/examples/cook_control/THIRD_PARTY_NOTICES.md)
+keep dashboard design credits separate from the integration and protocol work.
+
+### INT-12E-BW Community Dashboard
 
 ![INT-12E-BW Home Assistant dashboard showing both multisensor probes, batteries and temperature history](https://raw.githubusercontent.com/zampix1/ha-inkbird-int14/main/docs/images/community/int12e-dashboard.png)
 
@@ -124,6 +165,7 @@ More detail: [model profiles](https://github.com/zampix1/ha-inkbird-int14/blob/m
 | Set up local Wi-Fi or find the required credentials | [Tuya LAN setup](https://github.com/zampix1/ha-inkbird-int14/blob/main/docs/lan_setup.md) |
 | Use an ESPHome proxy instead of a nearby USB adapter | [Bluetooth and proxy guide](https://github.com/zampix1/ha-inkbird-int14/blob/main/docs/bluetooth_proxy.md) |
 | Understand Options, transport and entity availability | [Configuration guide](https://github.com/zampix1/ha-inkbird-int14/blob/main/docs/configuration.md) |
+| Install Cook Control and set up Echo/TV alerts | [English](https://github.com/zampix1/ha-inkbird-int14/blob/main/examples/cook_control/README.md) / [Italiano](https://github.com/zampix1/ha-inkbird-int14/blob/main/examples/cook_control/README.it.md) |
 | Build the multisensor probe dashboard | [Community dashboard](https://github.com/zampix1/ha-inkbird-int14/blob/main/docs/int12e_dashboard.md) |
 | Help validate a model | [Model validation report](https://github.com/zampix1/ha-inkbird-int14/discussions/new?category=q-a) |
 | Ask a setup question | [Discussions](https://github.com/zampix1/ha-inkbird-int14/discussions) |
@@ -135,7 +177,7 @@ Before posting diagnostics, logs or screenshots, remove addresses, device IDs, l
 
 Real-device reports are how new profiles become useful. Please include your exact model, transport, number of physical probes, temperature channels shown in the app and which readings or controls worked. For multisensor probes, a controlled tip/body/ambient test is particularly helpful. The [contribution guide](https://github.com/zampix1/ha-inkbird-int14/blob/main/CONTRIBUTING.md) has the details.
 
-If the integration is useful to you, a star or a [GitHub sponsorship](https://github.com/sponsors/zampix1) is appreciated. Testing, bug reports and clear setup notes help too.
+If the integration is useful to you, you can [buy me a coffee](https://buymeacoffee.com/zampix1) or support the work through [GitHub Sponsors](https://github.com/sponsors/zampix1). A star, testing, bug reports and clear setup notes help too.
 
 ## About This Project
 

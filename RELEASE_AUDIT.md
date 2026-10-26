@@ -1,6 +1,6 @@
 # Release Audit
 
-Last reviewed: 2026-10-19
+Last reviewed: 2026-10-26
 
 ## Public Positioning
 
@@ -17,7 +17,7 @@ The integration supports local BLE, local Tuya LAN where the model and DP map ha
 
 ## Release State
 
-Stable `v0.2.9` adds the community-tested model photo gallery to the public GitHub/HACS presentation. It retains the presentation and installation guides from `v0.2.8` following default-catalog inclusion. Runtime Python files are unchanged from `v0.2.7`; only the manifest version is bumped. It retains the Options/reload fixes from `v0.2.7` and the community-validated INT-12E-BW connected BLE path, community-validated INT-14S-BW BLE, experimental read-only INT-14S Tuya LAN data and guarded INT-14S-BW write validation introduced in `v0.2.6`.
+Release `v0.2.10` adds the optional INT-14-BW Cook Control bundle, native Alexa/TV notification routing, bilingual setup guides and real dashboard screenshots. HACS still installs only the integration; the optional ZIP is installed separately. Runtime Python files are unchanged from `v0.2.7`; only the manifest version is bumped. The release retains the model photo gallery, Options/reload fixes and existing model-support boundaries.
 
 HACS default inclusion was approved and merged on 2026-10-18 through [hacs/default#9786](https://github.com/hacs/default/pull/9786). Users can now search for Inkbird INT directly. Images in the README use absolute public URLs so that HACS can display them without resolving GitHub-relative paths. HACS serves documentation for the installed or selected release, so an existing installation must update to see the new README.
 
@@ -83,6 +83,18 @@ For the `v0.2.7` pre-release checks on 2026-10-15, Ruff formatting/lint, compila
 The `v0.2.8` presentation review on 2026-10-19 passed all 68 tests, Ruff formatting/lint and the cache audit. Gitleaks and TruffleHog found no secrets; detect-secrets reported only the same eight field-name matches. All seven README media URLs returned HTTP 200 and every linked repository file exists locally. The product image and both dashboard previews were visually reviewed. A diff against `v0.2.7` confirms that runtime Python files are unchanged. The linked English/Italian wiki installation guides were also updated for default-catalog installation.
 
 ## Remaining Risks
+
+### Optional Cook Control, 2026-10-26
+
+- Kept separate under `examples/cook_control`; the integration manifest advances to 0.2.10 for HACS release tracking. Domain, runtime code and model support are unchanged.
+- Exercised on HA 2026.10.4 during an INT-14-BW cook. Eight live channels and existing identities preserved; no device writes or HA restart.
+- Threshold-to-Echo/TV path physically confirmed. Actual five-minute reminders, Dismiss and cook-change cancellation checked in HA. See the [validation matrix](examples/cook_control/VALIDATION.md) for the precise boundary between physical tests and fixtures.
+- Full local suite: 128 tests; dashboard Node checks, Ruff formatting/lint and compilation checked. Optional bundle has 12 allowlisted entries and byte-identical rebuilds.
+- Gitleaks and TruffleHog found no secrets. Detect-secrets' eight existing matches are `cloud_api_key` / `cloud_api_secret` constants and UI labels, not credentials. The new dashboard files contain no household IDs, hosts, credentials or captured diagnostics.
+- Screenshots contain only the thermometer views. MIT notices and the distinction between protocol work and dashboard design are retained.
+- Publication requires successful Tests, HACS and hassfest CI on the release commit, followed by a downloaded-asset hash check. The GitHub Actions runs and release asset provide those publication records. Fresh-install discovery is covered by frontend fixtures; the physical HA check was an upgrade, not a second clean HA instance.
+
+### Integration
 
 - INT-12E-BW needs a controlled physical mapping for Food 1-3.
 - INT-14S-BW read-only LAN temperatures, batteries and display brightness are validated from sanitized captures and real runtime reports. Longer reconnect and dock/undock testing is still useful.

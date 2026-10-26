@@ -1,0 +1,2696 @@
+// Inkbird BBQ Dashboard — Lovelace dashboard strategy
+//
+// GENERATED FILE — do not edit by hand.
+// Built from dashboard/bbq-dashboard.json by scripts/build_strategy.py.
+//
+// Usage, in a dashboard's raw configuration editor:
+//
+//   strategy:
+//     type: custom:inkbird-bbq
+//   views: []
+//
+// Optional overrides, when auto-discovery guesses wrong:
+//
+//   strategy:
+//     type: custom:inkbird-bbq
+//     prefix: sensor.kitchen_inkbird_int_14
+//     device: inkbird_int_14
+//     update_entity: update.inkbird_int_update
+//     model: int14_bw        // auto (default), int14_bw or int14s_bw
+//
+// Requires the button-card, card-mod and mini-graph-card frontend cards.
+
+const TEMPLATE = {
+  "button_card_templates": {
+    "inkbird_probe": {
+      "triggers_update": "all",
+      "entity": "[[[ return \"input_number.inkbird_target_\" + variables.num ]]]",
+      "show_name": false,
+      "show_icon": false,
+      "show_label": false,
+      "tap_action": {
+        "action": "more-info"
+      },
+      "styles": {
+        "card": [
+          {
+            "padding": "18px"
+          },
+          {
+            "border-radius": "22px"
+          },
+          {
+            "border": "[[[\n  var _s = states['input_select.bbq_style'];\n  var glass = _s && _s.state === 'Transparent';\n  return glass ? '1px solid rgba(180,195,187,.18)' : '1px solid var(--divider-color)';\n]]]\n"
+          },
+          {
+            "border-top": "[[[\n  var n = variables.num, ch = variables.chan || 'food_1';\n  var _p = states['input_text.inkbird_sensor_prefix'];\n  _p = _p ? _p.state : '';\n  var pfx = (_p && _p !== 'unknown' && _p !== 'unavailable') ? _p : variables.prefix;\n  var eProbe  = 'sensor.bbq_probe_' + n + '_control_temperature';\n  var eBatt   = pfx + '_probe_' + n + '_battery';\n  var eTarget = 'input_number.inkbird_target_' + n;\n  var eName   = 'input_text.inkbird_name_' + n;\n  var eState  = 'sensor.bbq_probe_' + n + '_status';\n  var eRate   = 'sensor.bbq_probe_' + n + '_rate';\n  var _g = function(e){ var o = states[e]; return o ? o.state : undefined; };\n  var s = _g(eState) || 'idle';\n  var col = s==='ready' ? '#238458' : s==='close' ? '#b85a27' : s==='heating' ? '#946e16' : '#88988d';\n  return '3px solid ' + col;\n]]]\n"
+          },
+          {
+            "background": "[[[\n  var _s = states['input_select.bbq_style'];\n  var glass = _s && _s.state === 'Transparent';\n  return glass ? 'rgba(130,145,138,.08)' : 'var(--ha-card-background, var(--card-background-color))';\n]]]\n"
+          },
+          {
+            "box-shadow": "none"
+          },
+          {
+            "backdrop-filter": "[[[\n  var _s = states['input_select.bbq_style'];\n  var glass = _s && _s.state === 'Transparent';\n  return glass ? 'blur(12px)' : 'none';\n]]]\n"
+          }
+        ],
+        "grid": [
+          {
+            "grid-template-areas": "\"header header header header\" \"fig gauge side side\" \"spark spark spark spark\""
+          },
+          {
+            "grid-template-columns": "34px 128px 1fr 1fr"
+          },
+          {
+            "grid-template-rows": "auto 1fr 66px"
+          },
+          {
+            "gap": "10px 12px"
+          },
+          {
+            "align-items": "center"
+          },
+          {
+            "position": "relative"
+          }
+        ],
+        "custom_fields": {
+          "header": [
+            {
+              "justify-self": "stretch"
+            },
+            {
+              "position": "relative"
+            },
+            {
+              "z-index": "1"
+            }
+          ],
+          "fig": [
+            {
+              "align-self": "stretch"
+            },
+            {
+              "position": "relative"
+            },
+            {
+              "z-index": "1"
+            }
+          ],
+          "gauge": [
+            {
+              "position": "relative"
+            },
+            {
+              "z-index": "1"
+            }
+          ],
+          "side": [
+            {
+              "justify-self": "stretch"
+            },
+            {
+              "align-self": "start"
+            },
+            {
+              "position": "relative"
+            },
+            {
+              "z-index": "1"
+            }
+          ],
+          "spark": [
+            {
+              "align-self": "stretch"
+            },
+            {
+              "justify-self": "stretch"
+            },
+            {
+              "pointer-events": "none"
+            },
+            {
+              "opacity": "0.6"
+            },
+            {
+              "overflow": "hidden"
+            }
+          ]
+        }
+      },
+      "custom_fields": {
+        "header": "[[[\n  var n = variables.num, ch = variables.chan || 'food_1';\n  var _p = states['input_text.inkbird_sensor_prefix'];\n  _p = _p ? _p.state : '';\n  var pfx = (_p && _p !== 'unknown' && _p !== 'unavailable') ? _p : variables.prefix;\n  var eProbe  = 'sensor.bbq_probe_' + n + '_control_temperature';\n  var eBatt   = pfx + '_probe_' + n + '_battery';\n  var eTarget = 'input_number.inkbird_target_' + n;\n  var eName   = 'input_text.inkbird_name_' + n;\n  var eState  = 'sensor.bbq_probe_' + n + '_status';\n  var eRate   = 'sensor.bbq_probe_' + n + '_rate';\n  var _g = function(e){ var o = states[e]; return o ? o.state : undefined; };\n  var s = _g(eState) || 'idle';\n  var col = s==='ready' ? '#238458' : s==='close' ? '#b85a27' : s==='heating' ? '#946e16' : '#88988d';\n  var name = _g(eName);\n  var label = s==='ready' ? 'Ready' : s==='close' ? 'Almost there' : s==='heating' ? 'Heating' : 'Not connected';\n  var bv = parseInt(_g(eBatt));\n  var bok = !isNaN(bv);\n  var bcol = !bok ? '#88988d' : bv < 20 ? '#b8453d' : bv < 40 ? '#946e16' : '#238458';\n  return `<div style=\"display:flex;align-items:center;gap:11px;font-family:system-ui\">\n    <div style=\"display:flex;flex-direction:column;align-items:center;gap:3px\"\n         title=\"probe ${n} battery\">\n      <div style=\"width:30px;height:30px;border-radius:999px;display:grid;place-items:center;\n           font-family:ui-monospace,monospace;font-weight:700;background:rgba(142,171,151,.18);\n           border:1px solid rgba(180,195,187,.18);color:var(--primary-text-color)\">P${n}</div>\n      <div style=\"font-family:ui-monospace,monospace;font-size:.62rem;font-weight:700;\n           line-height:1;color:${bcol}\">${bok?bv+'%':'\\u2014'}</div>\n    </div>\n    <div style=\"flex:1;font-weight:620;font-size:1rem;color:var(--primary-text-color)\">${name}\n      <div style=\"font-size:.74rem;color:var(--secondary-text-color);font-weight:500\">Probe ${n}</div></div>\n    <div style=\"font-size:.72rem;font-weight:600;letter-spacing:.04em;text-transform:uppercase;\n         padding:5px 11px;border-radius:999px;color:${col};\n         background:${col}26;border:1px solid ${col}66\">${label}</div>\n  </div>`;\n]]]\n",
+        "fig": "[[[\n  var n = variables.num, ch = variables.chan || 'food_1';\n  var _p = states['input_text.inkbird_sensor_prefix'];\n  _p = _p ? _p.state : '';\n  var pfx = (_p && _p !== 'unknown' && _p !== 'unavailable') ? _p : variables.prefix;\n  var eProbe  = 'sensor.bbq_probe_' + n + '_control_temperature';\n  var eBatt   = pfx + '_probe_' + n + '_battery';\n  var eTarget = 'input_number.inkbird_target_' + n;\n  var eName   = 'input_text.inkbird_name_' + n;\n  var eState  = 'sensor.bbq_probe_' + n + '_status';\n  var eRate   = 'sensor.bbq_probe_' + n + '_rate';\n  var _g = function(e){ var o = states[e]; return o ? o.state : undefined; };\n  var s = _g(eState) || 'idle';\n  var col = s==='ready' ? '#238458' : s==='close' ? '#b85a27' : s==='heating' ? '#946e16' : '#88988d';\n  var connected = s !== 'idle';\n  var tip = connected ? col : '#88988d';\n  var glow = connected ? `filter:drop-shadow(0 0 4px ${col})` : '';\n  return `<svg viewBox=\"0 0 26 150\" style=\"height:148px;width:auto;display:block;margin:auto\">\n    <defs>\n      <linearGradient id=\"st${n}\" x1=\"0\" x2=\"1\" y1=\"0\" y2=\"0\">\n        <stop offset=\"0\" stop-color=\"#6c7075\"/><stop offset=\".28\" stop-color=\"#eef1f3\"/>\n        <stop offset=\".5\" stop-color=\"#c4c9ce\"/><stop offset=\".72\" stop-color=\"#eef1f3\"/>\n        <stop offset=\"1\" stop-color=\"#5c6065\"/></linearGradient>\n      <linearGradient id=\"gl${n}\" x1=\"0\" x2=\"1\" y1=\"0\" y2=\"0\">\n        <stop offset=\"0\" stop-color=\"#0c0c0e\"/><stop offset=\".3\" stop-color=\"#3a3a40\"/>\n        <stop offset=\".5\" stop-color=\"#141418\"/><stop offset=\".75\" stop-color=\"#2a2a30\"/>\n        <stop offset=\"1\" stop-color=\"#050506\"/></linearGradient>\n      <linearGradient id=\"rg${n}\" x1=\"0\" x2=\"1\" y1=\"0\" y2=\"0\">\n        <stop offset=\"0\" stop-color=\"#8a8e93\"/><stop offset=\".5\" stop-color=\"#f2f4f6\"/>\n        <stop offset=\"1\" stop-color=\"#7a7e83\"/></linearGradient>\n    </defs>\n    <ellipse cx=\"13\" cy=\"6\" rx=\"7.5\" ry=\"2.6\" fill=\"url(#rg${n})\"/>\n    <path d=\"M5.5 6 L20.5 6 L17 52 L9 52 Z\" fill=\"url(#gl${n})\" stroke=\"#000\" stroke-width=\".6\"/>\n    <text x=\"13\" y=\"30\" text-anchor=\"middle\" font-family=\"ui-monospace,monospace\"\n          font-weight=\"700\" font-size=\"10\" fill=\"${connected?'#f0f0f2':'#8a8a8c'}\">${n}</text>\n    <rect x=\"8.5\" y=\"52\" width=\"9\" height=\"4\" rx=\"1\" fill=\"url(#rg${n})\"/>\n    <rect x=\"10\" y=\"56\" width=\"6\" height=\"82\" fill=\"url(#st${n})\"/>\n    <path d=\"M10 138 L16 138 L13 150 Z\" fill=\"${tip}\" style=\"${glow}\"/>\n  </svg>`;\n]]]\n",
+        "gauge": "[[[\n  var n = variables.num, ch = variables.chan || 'food_1';\n  var _p = states['input_text.inkbird_sensor_prefix'];\n  _p = _p ? _p.state : '';\n  var pfx = (_p && _p !== 'unknown' && _p !== 'unavailable') ? _p : variables.prefix;\n  var eTarget = 'input_number.inkbird_target_' + n;\n  var eState  = 'sensor.bbq_probe_' + n + '_status';\n  var _g = function(e){ var o = states[e]; return o ? o.state : undefined; };\n  var choice = _g('input_select.inkbird_dashboard_model') || 'Auto';\n  var profile = _g('sensor.__INKBIRD_DEVICE___configured_model_profile') || '';\n  var model = _g('sensor.__INKBIRD_DEVICE___configured_model') || '';\n  var bw = choice === 'INT-14-BW' || (choice === 'Auto' && (profile === 'int14_bw' || (model.includes('14-BW') && !model.includes('14S'))));\n  var eCtrl   = 'sensor.bbq_probe_' + n + '_control_temperature';\n  var eDirect = pfx + '_probe_' + n + '_' + (bw ? 'internal' : 'food_4') + '_temperature';\n  var eAlt    = pfx + '_probe_' + n + '_' + (bw ? 'internal' : 'food_1') + '_temperature';\n  var _gVal = function(e){ var o = states[e]; return (o && o.state !== 'unknown' && o.state !== 'unavailable' && o.state !== '') ? parseFloat(o.state) : NaN; };\n  var t = _gVal(eCtrl);\n  if (isNaN(t)) t = _gVal(eDirect);\n  if (isNaN(t)) t = _gVal(eAlt);\n  var s = _g(eState) || 'idle';\n  var col = s==='ready' ? '#238458' : s==='close' ? '#b85a27' : s==='heating' ? '#946e16' : '#88988d';\n  var g = parseFloat(_g(eTarget));\n  var amb = 22, connected = !isNaN(t);\n  var pct = !connected || !Number.isFinite(g) ? 0\n    : g <= amb ? (t >= g ? 1 : 0)\n    : Math.max(0, Math.min(1,(t-amb)/(g-amb)));\n  var R=52, C=2*Math.PI*R, ARC=0.75;\n  var dash=(C*ARC*pct).toFixed(1)+' '+C;\n  var uf = (_g('input_select.inkbird_unit')||'').indexOf('F') >= 0;\n  var us = uf ? '\\u00b0F' : '\\u00b0C';\n  var cv = function(c){ return uf ? Math.round(c*9/5+32) : Math.round(c*10)/10; };\n  var temp = connected ? cv(t) : '\\u2014';\n  return `<div style=\"position:relative;width:128px;height:128px;margin:auto\">\n    <svg width=\"128\" height=\"128\" viewBox=\"0 0 128 128\" style=\"transform:rotate(135deg)\">\n      <circle cx=\"64\" cy=\"64\" r=\"${R}\" fill=\"none\" stroke=\"var(--divider-color)\" stroke-width=\"9\"\n        stroke-linecap=\"round\" stroke-dasharray=\"${(C*ARC).toFixed(1)} ${C}\"/>\n      <circle cx=\"64\" cy=\"64\" r=\"${R}\" fill=\"none\" stroke=\"${col}\" stroke-width=\"9\"\n        stroke-linecap=\"round\" stroke-dasharray=\"${dash}\"\n        style=\"transition:stroke-dasharray .6s ease,stroke .4s\"/>\n    </svg>\n    <div style=\"position:absolute;inset:0;display:flex;flex-direction:column;\n         align-items:center;justify-content:center;font-family:ui-monospace,monospace\">\n      <div style=\"font-size:1.7rem;font-weight:650;color:var(--primary-text-color);line-height:1\">${temp}<span style=\"font-size:.9rem;color:var(--secondary-text-color)\">${us}</span></div>\n      <div style=\"font-size:.72rem;color:var(--secondary-text-color);margin-top:2px\">${connected?'target '+cv(g)+'\\u00b0':'no probe'}</div>\n    </div>\n  </div>`;\n]]]\n",
+        "side": "[[[\n  var n = variables.num, ch = variables.chan || 'food_1';\n  var _p = states['input_text.inkbird_sensor_prefix'];\n  _p = _p ? _p.state : '';\n  var pfx = (_p && _p !== 'unknown' && _p !== 'unavailable') ? _p : variables.prefix;\n  var eTarget = 'input_number.inkbird_target_' + n;\n  var eState  = 'sensor.bbq_probe_' + n + '_status';\n  var eRate   = 'sensor.bbq_probe_' + n + '_rate';\n  var _g = function(e){ var o = states[e]; return o ? o.state : undefined; };\n  var choice = _g('input_select.inkbird_dashboard_model') || 'Auto';\n  var profile = _g('sensor.__INKBIRD_DEVICE___configured_model_profile') || '';\n  var model = _g('sensor.__INKBIRD_DEVICE___configured_model') || '';\n  var bw = choice === 'INT-14-BW' || (choice === 'Auto' && (profile === 'int14_bw' || (model.includes('14-BW') && !model.includes('14S'))));\n  var eCtrl   = 'sensor.bbq_probe_' + n + '_control_temperature';\n  var eDirect = pfx + '_probe_' + n + '_' + (bw ? 'internal' : 'food_4') + '_temperature';\n  var eAlt    = pfx + '_probe_' + n + '_' + (bw ? 'internal' : 'food_1') + '_temperature';\n  var _gVal = function(e){ var o = states[e]; return (o && o.state !== 'unknown' && o.state !== 'unavailable' && o.state !== '') ? parseFloat(o.state) : NaN; };\n  var t = _gVal(eCtrl);\n  if (isNaN(t)) t = _gVal(eDirect);\n  if (isNaN(t)) t = _gVal(eAlt);\n  var s = _g(eState) || 'idle';\n  var col = s==='ready' ? '#238458' : s==='close' ? '#b85a27' : s==='heating' ? '#946e16' : '#88988d';\n  var g = parseFloat(_g(eTarget));\n  var connected = !isNaN(t);\n  var uf = (_g('input_select.inkbird_unit')||'').indexOf('F') >= 0;\n  var us = uf ? '\\u00b0F' : '\\u00b0C';\n  var cv = function(c){ return uf ? Math.round(c*9/5+32) : Math.round(c*10)/10; };\n  var togo = uf ? Math.round((g-t)*9/5) : Math.round((g-t)*10)/10;\n  var footer = !connected ? 'Insert a probe to begin'\n    : (s==='ready' ? 'Reached target \\u2014 resting'\n    : Math.max(0, togo) + '\\u00b0 to go');\n  var rate = parseFloat(_g(eRate));\n  var eta = '';\n  if (connected && s !== 'ready' && !isNaN(rate) && rate > 0.5 && g > t) {\n    var mins = Math.round((g - t) / rate * 60);\n    if (mins > 0 && mins <= 1440) {\n      var hh = Math.floor(mins/60), mm = mins % 60;\n      eta = hh ? ('\\u2248 ' + hh + ' h ' + mm + ' m') : ('\\u2248 ' + mm + ' m');\n    }\n  }\n  var primary = bw ? 'Internal' : 'Food 4 \u00b7 tip';\n  var trend = isNaN(rate) ? '\\u2014' : ((rate > .15 ? '\\u2197 +' : rate < -.15 ? '\\u2198 ' : '\\u2192 ') + rate.toFixed(1) + ' \\u00b0C/h');\n  return `<div style=\"display:flex;flex-direction:column;gap:9px;font-family:system-ui\">\n    <div style=\"font-size:.78rem;color:var(--secondary-text-color)\">${footer}</div>\n    <div style=\"display:flex;gap:10px;align-items:center;font-size:.72rem;color:var(--secondary-text-color)\"><span>${primary}</span><span style=\"font-family:ui-monospace,monospace;color:${col}\">${trend}</span></div>\n    ${eta ? `<div style=\"font-family:ui-monospace,monospace;font-size:.74rem;color:${col}\">${eta}</div>` : ''}\n  </div>`;\n]]]\n",
+        "spark": {
+          "card": {
+            "type": "custom:mini-graph-card",
+            "entities": [
+              {
+                "entity": "[[[ return \"sensor.bbq_probe_\" + variables.num + \"_control_temperature\" ]]]",
+                "name": "Temperature trend"
+              }
+            ],
+            "hours_to_show": 2,
+            "points_per_hour": 60,
+            "height": 60,
+            "line_width": 3,
+            "lower_bound": 0,
+            "upper_bound": "[[[ var v = parseFloat((states['input_number.bbq_graph_max']||{}).state); return isNaN(v) ? 150 : v; ]]]",
+            "line_color": "[[[\n  var _ac = states['input_select.bbq_accent'];\n  var _A = {Ember:'#b85a27',Blue:'#2f7ce0',Green:'#34b56a',Purple:'#8a5cf0',Red:'#e0483a',Teal:'#1fb6b0'};\n  return _A[_ac ? _ac.state : 'Ember'] || _A.Ember;\n]]]\n",
+            "show": {
+              "name": false,
+              "icon": false,
+              "state": false,
+              "legend": false,
+              "labels": false,
+              "points": false,
+              "fill": "fade"
+            },
+            "card_mod": {
+              "style": "ha-card {\n  background: transparent !important;\n  border: 0 !important;\n  box-shadow: none !important;\n  padding: 0 !important;\n}\n"
+            }
+          }
+        }
+      }
+    },
+    "inkbird_recipe": {
+      "template": "inkbird_recipe_style",
+      "tap_action": {
+        "action": "call-service",
+        "service": "script.inkbird_apply_recipe",
+        "data": {
+          "label": "[[[ return variables.rname ]]]",
+          "target": "[[[ return variables.temp ]]]"
+        }
+      }
+    },
+    "inkbird_recipe_style": {
+      "show_icon": true,
+      "styles": {
+        "card": [
+          {
+            "padding": "14px"
+          },
+          {
+            "border-radius": "22px"
+          },
+          {
+            "border": "[[[\n  var _s = states['input_select.bbq_style'];\n  var glass = _s && _s.state === 'Transparent';\n  return glass ? '1px solid rgba(180,195,187,.18)' : '1px solid var(--divider-color)';\n]]]\n"
+          },
+          {
+            "background": "[[[\n  var _s = states['input_select.bbq_style'];\n  var glass = _s && _s.state === 'Transparent';\n  return glass ? 'rgba(130,145,138,.08)' : 'var(--ha-card-background, var(--card-background-color))';\n]]]\n"
+          },
+          {
+            "backdrop-filter": "[[[\n  var _s = states['input_select.bbq_style'];\n  var glass = _s && _s.state === 'Transparent';\n  return glass ? 'blur(12px)' : 'none';\n]]]\n"
+          }
+        ],
+        "grid": [
+          {
+            "grid-template-areas": "\"i\" \"n\" \"t\" \"s\""
+          },
+          {
+            "grid-template-rows": "auto auto auto auto"
+          },
+          {
+            "gap": "6px"
+          },
+          {
+            "justify-items": "start"
+          }
+        ],
+        "icon": [
+          {
+            "color": "[[[ return variables.color ]]]"
+          },
+          {
+            "width": "30px"
+          }
+        ],
+        "name": [
+          {
+            "color": "var(--primary-text-color)"
+          },
+          {
+            "font-weight": 620
+          },
+          {
+            "font-size": ".92rem"
+          },
+          {
+            "justify-self": "start"
+          }
+        ],
+        "custom_fields": {
+          "t": [
+            {
+              "justify-self": "start"
+            }
+          ],
+          "s": [
+            {
+              "justify-self": "start"
+            }
+          ]
+        }
+      },
+      "custom_fields": {
+        "t": "[[[\n  var _ac = states['input_select.bbq_accent'];\n  var _A = {Ember:['#b85a27','#ff8a3d'],Blue:['#2f7ce0','#4f98f0'],Green:['#34b56a','#4fd188'],Purple:['#8a5cf0','#a67cff'],Red:['#e0483a','#f26a5c'],Teal:['#1fb6b0','#3fd0ca']};\n  var acc = _A[_ac ? _ac.state : 'Ember'] || _A.Ember;\n  var u = states['input_select.inkbird_unit'];\n  var uf = u ? u.state.indexOf('F') >= 0 : false;\n  var us = uf ? '\\u00b0F' : '\\u00b0C';\n  var c = variables.temp;\n  if (variables.rname === 'Custom') {\n    var o = states['input_number.bbq_custom_target'];\n    c = o ? parseFloat(o.state) : NaN;\n    if (isNaN(c) || c <= 0) {\n      return `<div style=\"font-family:ui-monospace,monospace;font-weight:650;font-size:1.15rem;color:var(--secondary-text-color)\">\\u2014</div>`;\n    }\n  }\n  var v = uf ? Math.round(c * 9/5 + 32) : Math.round(c);\n  return `<div style=\"font-family:ui-monospace,monospace;font-weight:650;font-size:1.15rem;color:${acc[0]}\">${v}<span style=\"font-size:.74rem;color:var(--secondary-text-color)\">${us}</span></div>`;\n]]]\n",
+        "s": "[[[ return `<div style=\"font-size:.74rem;color:var(--secondary-text-color)\">${variables.note}</div>`; ]]]\n"
+      }
+    }
+  },
+  "title": "Cook Control",
+  "views": [
+    {
+      "title": "Cook Control",
+      "path": "cook",
+      "icon": "mdi:grill",
+      "type": "sections",
+      "max_columns": 3,
+      "sections": [
+        {
+          "type": "grid",
+          "column_span": 3,
+          "cards": [
+            {
+              "type": "custom:button-card",
+              "tap_action": {
+                "action": "none"
+              },
+              "styles": {
+                "card": [
+                  {
+                    "background": "rgba(142,171,151,.18)"
+                  },
+                  {
+                    "border": "1px solid rgba(180,195,187,.18)"
+                  },
+                  {
+                    "backdrop-filter": "blur(12px)"
+                  },
+                  {
+                    "border-radius": "22px"
+                  },
+                  {
+                    "box-shadow": "none"
+                  },
+                  {
+                    "padding": "24px"
+                  }
+                ],
+                "grid": [
+                  {
+                    "grid-template-areas": "\"mark title\" \"status status\""
+                  },
+                  {
+                    "grid-template-columns": "auto minmax(0, 1fr)"
+                  },
+                  {
+                    "grid-template-rows": "auto auto"
+                  },
+                  {
+                    "align-items": "center"
+                  },
+                  {
+                    "gap": "12px 14px"
+                  }
+                ],
+                "custom_fields": {
+                  "title": [
+                    {
+                      "justify-self": "start"
+                    },
+                    {
+                      "min-width": 0
+                    }
+                  ],
+                  "status": [
+                    {
+                      "justify-self": "stretch"
+                    },
+                    {
+                      "width": "100%"
+                    }
+                  ]
+                }
+              },
+              "custom_fields": {
+                "mark": "[[[\n  var _ac = states['input_select.bbq_accent'];\n  var _A = {Ember:['#b85a27','#ff8a3d'],Blue:['#2f7ce0','#4f98f0'],Green:['#34b56a','#4fd188'],Purple:['#8a5cf0','#a67cff'],Red:['#e0483a','#f26a5c'],Teal:['#1fb6b0','#3fd0ca']};\n  var acc = _A[_ac ? _ac.state : 'Ember'] || _A.Ember;\n  return `<div style=\"width:46px;height:46px;border-radius:13px;\n  display:grid;place-items:center;\n  background:rgba(142,171,151,.24)\">\n  <svg width=\"26\" height=\"26\" viewBox=\"0 0 24 24\" fill=\"none\" stroke=\"var(--primary-text-color)\"\n    stroke-width=\"2.1\" stroke-linecap=\"round\" stroke-linejoin=\"round\">\n    <path d=\"M12 3c1.5 2.5.5 4-.7 5.4C10 10 9 11.4 9 13.2A3 3 0 0 0 15 13.2c0-1.2-.5-2-1-2.8\"/>\n    <path d=\"M12 21a5 5 0 0 0 5-5c0-1.6-.7-2.7-1.5-3.7\"/></svg></div>`;\n]]]\n",
+                "title": "[[[\n  var ms = states['sensor.__INKBIRD_DEVICE___configured_model'];\n  var choice = states['input_select.inkbird_dashboard_model'];\n  var model = choice && choice.state !== 'Auto' ? choice.state : (ms && !['unknown','unavailable'].includes(ms.state) ? ms.state.replace(/^Inkbird /,'') : 'Inkbird INT');\n  var active = [1,2,3,4].filter(n => { var s=states['sensor.bbq_probe_'+n+'_control_temperature']; return s && !['unknown','unavailable'].includes(s.state); }).length;\n  return `<div style=\"font-family:system-ui;text-align:left\">\n  <div style=\"font-size:1.55rem;font-weight:650;color:var(--primary-text-color);letter-spacing:-.03em\">Cook Control</div>\n  <div style=\"font-size:.85rem;color:var(--secondary-text-color);margin-top:4px\">${model} \u00b7 ${active}/4 probes active</div>\n</div>`; ]]]\n",
+                "status": "[[[\n  var tr = states['sensor.__INKBIRD_DEVICE___active_transport'];\n  var bc = states['binary_sensor.__INKBIRD_DEVICE___ble_connected'];\n  var t  = tr ? tr.state : 'unknown';\n  var map = {\n    ble:        ['Bluetooth', 'live'],\n    ble_waiting:['Bluetooth', 'wait'],\n    wifi:       ['Wi-Fi',     'live'],\n    wi_fi:      ['Wi-Fi',     'live'],\n    local_lan:  ['LAN',       'live'],\n    lan:        ['LAN',       'live'],\n    cloud:      ['History',   'history'],\n    none:       ['no link',   'down'],\n    unknown:    ['no link',   'down'],\n    unavailable:['no link',   'down']\n  };\n  var m = map[t] || [t.replace(/_/g,' '), 'live'];\n  var how = m[0], mode = m[1];\n  if (mode === 'live' && t.indexOf('ble') === 0 && !(bc && bc.state === 'on')) mode = 'wait';\n  var col  = mode === 'live' ? '#238458' : mode === 'history' ? '#4f98f0' : mode === 'wait' ? '#946e16' : '#b8453d';\n  var word = mode === 'live' ? 'Live' : mode === 'history' ? 'History' : mode === 'wait' ? 'Connecting' : 'Offline';\n  var pulse = mode === 'wait' ? 'animation:inkbird-pulse 1.4s ease-in-out infinite' : '';\n  var prefixHelper = states['input_text.inkbird_sensor_prefix'];\n  var prefix = prefixHelper && !['unknown','unavailable',''].includes(prefixHelper.state)\n    ? prefixHelper.state : 'sensor.__INKBIRD_AREA_PREFIX__';\n  var bs = states[prefix + '_base_battery'];\n  var b = bs ? bs.state : undefined;\n  b = (b === undefined || b === 'unknown' || b === 'unavailable') ? '\\u2014' : b + '%';\n  var quality = states['sensor.__INKBIRD_DEVICE___battery_report_quality'];\n  var suspect = quality && /suspect|degrad/i.test(quality.state);\n  var soundId = Object.keys(states).find(function(id){ return id.indexOf('switch.')===0 && id.indexOf('inkbird')>=0 && /(sound|mute)/.test(id); });\n  var se = soundId ? states[soundId] : null;\n  var ss = se || states['binary_sensor.__INKBIRD_DEVICE___sound_enabled'];\n  var sound = !ss ? '\\ud83d\\udd07 \\u2014' : ss.state === 'on' ? '\\ud83d\\udd0a On' : ss.state === 'off' ? '\\ud83d\\udd07 Off' : '\\ud83d\\udd07 \\u2014';\n  return `<style>@keyframes inkbird-pulse{0%,100%{opacity:1}50%{opacity:.25}}</style>\n  <div style=\"display:flex;gap:8px;align-items:center;justify-content:flex-start;flex-wrap:wrap;font-family:system-ui\">\n    <span title=\"active transport: ${t}\"\n      style=\"display:inline-flex;align-items:center;gap:8px;background:rgba(130,145,138,.10);\n      border:1px solid rgba(180,195,187,.18);padding:8px 13px;border-radius:999px;font-size:.82rem;color:var(--secondary-text-color)\">\n      <span style=\"width:8px;height:8px;border-radius:50%;background:${col};${pulse}\"></span>\n      ${word} \\u00b7 <b style=\"color:var(--primary-text-color)\">${how}</b></span>\n    <span style=\"background:rgba(130,145,138,.10);border:1px solid rgba(180,195,187,.18);padding:8px 13px;\n      border-radius:999px;font-size:.82rem;color:var(--secondary-text-color)\">Base battery\n      <b style=\"color:${suspect?'#d3a94d':'var(--primary-text-color)'}\">${b}${suspect?'*':''}</b></span>\n    <span title=\"Station sound status; write control appears when supported by the integration\"\n      style=\"background:rgba(130,145,138,.10);border:1px solid rgba(180,195,187,.18);padding:8px 11px;border-radius:999px;font-size:.82rem;color:var(--primary-text-color)\">${sound}</span>\n  </div>`;\n]]]\n"
+              }
+            },
+            {
+              "type": "conditional",
+              "conditions": [
+                {
+                  "condition": "state",
+                  "entity": "sensor.bbq_alert_count",
+                  "state_not": "0"
+                }
+              ],
+              "card": {
+                "type": "markdown",
+                "content": "{% set ns = namespace(rows=[]) %}\n{% for i in range(1,5) %}\n  {% set s = states('sensor.bbq_probe_' ~ i ~ '_status') %}\n  {% set n = states('input_text.inkbird_name_' ~ i) %}\n  {% set g = states('input_number.inkbird_target_' ~ i) | int %}\n  {% if s == 'ready' %}\n    {% set ns.rows = ns.rows + ['\ud83d\udfe2 **' ~ n ~ '** reached ' ~ g ~ '\u00b0C \u2014 ready'] %}\n  {% elif s == 'close' %}\n    {% set ns.rows = ns.rows + ['\ud83d\udfe1 **' ~ n ~ '** almost there (target ' ~ g ~ '\u00b0C)'] %}\n  {% endif %}\n{% endfor %}\n### Alerts\n{% for r in ns.rows %}- {{ r }}\n{% endfor %}\n",
+                "card_mod": {
+                  "style": "ha-card {\n{% if is_state('input_select.bbq_style','Transparent') %}\n  background: rgba(130,145,138,.08);\n  backdrop-filter: blur(12px);\n  border: 1px solid rgba(180,195,187,.18);\n{% else %}\n  background: var(--ha-card-background, var(--card-background-color));\n  border: 1px solid var(--divider-color);\n{% endif %}\n  border-radius: 22px; box-shadow: none; color: var(--primary-text-color);\n}\n"
+                }
+              }
+            }
+          ]
+        },
+        {
+          "type": "grid",
+          "column_span": 2,
+          "cards": [
+            {
+              "type": "heading",
+              "heading": "Probes",
+              "heading_style": "title",
+              "icon": "mdi:thermometer-probe"
+            },
+            {
+              "type": "grid",
+              "columns": 2,
+              "square": false,
+              "grid_options": {
+                "columns": "full"
+              },
+              "cards": [
+                {
+                  "type": "custom:button-card",
+                  "template": "inkbird_probe",
+                  "variables": {
+                    "num": 1,
+                    "prefix": "sensor.__INKBIRD_AREA_PREFIX__"
+                  }
+                },
+                {
+                  "type": "custom:button-card",
+                  "template": "inkbird_probe",
+                  "variables": {
+                    "num": 2,
+                    "prefix": "sensor.__INKBIRD_AREA_PREFIX__"
+                  }
+                },
+                {
+                  "type": "custom:button-card",
+                  "template": "inkbird_probe",
+                  "variables": {
+                    "num": 3,
+                    "prefix": "sensor.__INKBIRD_AREA_PREFIX__"
+                  }
+                },
+                {
+                  "type": "custom:button-card",
+                  "template": "inkbird_probe",
+                  "variables": {
+                    "num": 4,
+                    "prefix": "sensor.__INKBIRD_AREA_PREFIX__"
+                  }
+                }
+              ],
+              "card_mod": {
+                "style": "#root {\n  grid-template-columns: repeat(auto-fit, minmax(320px, 1fr)) !important;\n}\n"
+              }
+            },
+            {
+              "type": "history-graph",
+              "title": "Temperatuurverloop \u00b7 12 uur",
+              "grid_options": {
+                "columns": "full"
+              },
+              "hours_to_show": 12,
+              "entities": [
+                {
+                  "entity": "sensor.bbq_probe_1_control_temperature",
+                  "name": "Probe 1"
+                },
+                {
+                  "entity": "sensor.bbq_probe_2_control_temperature",
+                  "name": "Probe 2"
+                },
+                {
+                  "entity": "sensor.bbq_probe_3_control_temperature",
+                  "name": "Probe 3"
+                },
+                {
+                  "entity": "sensor.bbq_probe_4_control_temperature",
+                  "name": "Probe 4"
+                }
+              ],
+              "card_mod": {
+                "style": "ha-card { border-radius: 22px; box-shadow: none; background: rgba(130,145,138,.08); border: 1px solid rgba(180,195,187,.18); backdrop-filter: blur(12px); }\n"
+              }
+            }
+          ]
+        },
+        {
+          "type": "grid",
+          "cards": [
+            {
+              "type": "heading",
+              "heading": "Recepten",
+              "heading_style": "title",
+              "icon": "mdi:chef-hat"
+            },
+            {
+              "type": "markdown",
+              "content": "#### Recipe presets \u2014 first pick the **Active probe** above, then tap a recipe\n",
+              "card_mod": {
+                "style": "ha-card { background:none;border:none;box-shadow:none;color:var(--secondary-text-color); }\n"
+              }
+            },
+            {
+              "type": "grid",
+              "columns": 6,
+              "square": false,
+              "cards": [
+                {
+                  "type": "tile",
+                  "entity": "input_select.inkbird_active_probe",
+                  "name": "Active probe",
+                  "icon": "mdi:thermometer-lines",
+                  "features": [
+                    {
+                      "type": "select-options"
+                    }
+                  ]
+                },
+                {
+                  "type": "custom:button-card",
+                  "template": "inkbird_recipe",
+                  "name": "Beef Brisket",
+                  "variables": {
+                    "rname": "Beef Brisket",
+                    "temp": 93,
+                    "note": "Low & slow",
+                    "color": "#b0442a"
+                  },
+                  "icon": "mdi:cow"
+                },
+                {
+                  "type": "custom:button-card",
+                  "template": "inkbird_recipe",
+                  "name": "Chicken",
+                  "variables": {
+                    "rname": "Chicken",
+                    "temp": 74,
+                    "note": "Food-safe",
+                    "color": "#e0a23a"
+                  },
+                  "icon": "mdi:food-drumstick"
+                },
+                {
+                  "type": "custom:button-card",
+                  "template": "inkbird_recipe",
+                  "name": "Medium Steak",
+                  "variables": {
+                    "rname": "Medium Steak",
+                    "temp": 57,
+                    "note": "Pull temp",
+                    "color": "#c25a3c"
+                  },
+                  "icon": "mdi:food-steak"
+                },
+                {
+                  "type": "custom:button-card",
+                  "template": "inkbird_recipe",
+                  "name": "Pork Ribs",
+                  "variables": {
+                    "rname": "Pork Ribs",
+                    "temp": 90,
+                    "note": "Fall-off",
+                    "color": "#a9563b"
+                  },
+                  "icon": "mdi:pig"
+                },
+                {
+                  "type": "custom:button-card",
+                  "template": "inkbird_recipe",
+                  "name": "Salmon",
+                  "variables": {
+                    "rname": "Salmon",
+                    "temp": 52,
+                    "note": "Just flaky",
+                    "color": "#e07a52"
+                  },
+                  "icon": "mdi:fish"
+                },
+                {
+                  "type": "custom:button-card",
+                  "template": "inkbird_recipe_style",
+                  "name": "Custom",
+                  "icon": "mdi:tune-variant",
+                  "variables": {
+                    "rname": "Custom",
+                    "temp": 0,
+                    "note": "Set it yourself",
+                    "color": "#8a8f98"
+                  },
+                  "tap_action": {
+                    "action": "call-service",
+                    "service": "input_boolean.toggle",
+                    "target": {
+                      "entity_id": "input_boolean.bbq_custom_open"
+                    }
+                  }
+                }
+              ],
+              "card_mod": {
+                "style": "#root {\n  grid-template-columns: repeat(auto-fit, minmax(150px, 1fr)) !important;\n}\n"
+              }
+            },
+            {
+              "type": "conditional",
+              "conditions": [
+                {
+                  "condition": "state",
+                  "entity": "input_boolean.bbq_custom_open",
+                  "state": "on"
+                }
+              ],
+              "card": {
+                "type": "vertical-stack",
+                "cards": [
+                  {
+                    "type": "markdown",
+                    "content": "#### \ud83e\uddea Custom recipe\nSet it up, then **Apply to probe**. Everything below is a normal helper \u2014 the recipe presets write to the same places.\n",
+                    "card_mod": {
+                      "style": "ha-card { background:none;border:none;box-shadow:none;color:var(--secondary-text-color); }\n"
+                    }
+                  },
+                  {
+                    "type": "grid",
+                    "columns": 2,
+                    "square": false,
+                    "card_mod": {
+                      "style": "#root {\n  grid-template-columns: repeat(auto-fit, minmax(260px, 1fr)) !important;\n}\n"
+                    },
+                    "cards": [
+                      {
+                        "type": "tile",
+                        "entity": "input_text.bbq_custom_name",
+                        "name": "Name",
+                        "icon": "mdi:pencil"
+                      },
+                      {
+                        "type": "tile",
+                        "entity": "input_number.bbq_custom_target",
+                        "name": "Target",
+                        "icon": "mdi:thermometer-alert",
+                        "features": [
+                          {
+                            "type": "numeric-input",
+                            "style": "slider"
+                          }
+                        ],
+                        "features_position": "bottom"
+                      },
+                      {
+                        "type": "tile",
+                        "entity": "input_select.inkbird_active_probe",
+                        "name": "Probe",
+                        "icon": "mdi:target",
+                        "features": [
+                          {
+                            "type": "select-options"
+                          }
+                        ],
+                        "features_position": "bottom"
+                      },
+                      {
+                        "type": "tile",
+                        "entity": "input_number.bbq_rest_minutes",
+                        "name": "Rest reminder",
+                        "icon": "mdi:timer-sand",
+                        "features": [
+                          {
+                            "type": "numeric-input",
+                            "style": "slider"
+                          }
+                        ],
+                        "features_position": "bottom"
+                      },
+                      {
+                        "type": "tile",
+                        "entity": "input_text.bbq_notify_service",
+                        "name": "Notify service",
+                        "icon": "mdi:cellphone-message"
+                      },
+                      {
+                        "type": "tile",
+                        "entity": "input_boolean.bbq_tts_alerts",
+                        "name": "Announce out loud",
+                        "icon": "mdi:bullhorn",
+                        "features": [
+                          {
+                            "type": "toggle"
+                          }
+                        ],
+                        "features_position": "bottom"
+                      },
+                      {
+                        "type": "custom:button-card",
+                        "icon": "mdi:check",
+                        "name": "Apply to probe",
+                        "show_name": true,
+                        "show_icon": true,
+                        "styles": {
+                          "card": [
+                            {
+                              "background": "[[[\n  var _ac = states['input_select.bbq_accent'];\n  var _A = {Ember:['#b85a27','#ff8a3d'],Blue:['#2f7ce0','#4f98f0'],Green:['#34b56a','#4fd188'],Purple:['#8a5cf0','#a67cff'],Red:['#e0483a','#f26a5c'],Teal:['#1fb6b0','#3fd0ca']};\n  var acc = _A[_ac ? _ac.state : 'Ember'] || _A.Ember;\n  return acc[0];\n]]]\n"
+                            },
+                            {
+                              "border-radius": "14px"
+                            },
+                            {
+                              "padding": "12px"
+                            },
+                            {
+                              "color": "var(--primary-text-color)"
+                            }
+                          ],
+                          "name": [
+                            {
+                              "font-weight": 650
+                            },
+                            {
+                              "font-size": ".9rem"
+                            }
+                          ]
+                        },
+                        "tap_action": {
+                          "action": "call-service",
+                          "service": "script.inkbird_apply_custom_recipe"
+                        }
+                      },
+                      {
+                        "type": "custom:button-card",
+                        "icon": "mdi:close",
+                        "name": "Cancel",
+                        "show_name": true,
+                        "show_icon": true,
+                        "styles": {
+                          "card": [
+                            {
+                              "background": "rgba(130,145,138,.08)"
+                            },
+                            {
+                              "border": "1px solid rgba(180,195,187,.18)"
+                            },
+                            {
+                              "border-radius": "14px"
+                            },
+                            {
+                              "padding": "12px"
+                            },
+                            {
+                              "color": "var(--secondary-text-color)"
+                            }
+                          ],
+                          "name": [
+                            {
+                              "font-size": ".9rem"
+                            }
+                          ]
+                        },
+                        "tap_action": {
+                          "action": "call-service",
+                          "service": "input_boolean.turn_off",
+                          "target": {
+                            "entity_id": "input_boolean.bbq_custom_open"
+                          }
+                        }
+                      }
+                    ]
+                  }
+                ]
+              }
+            }
+          ]
+        }
+      ]
+    },
+    {
+      "title": "Probes",
+      "path": "probes",
+      "icon": "mdi:thermometer-lines",
+      "type": "sections",
+      "max_columns": 2,
+      "sections": [
+        {
+          "type": "grid",
+          "cards": [
+            {
+              "type": "conditional",
+              "inkbird_model": "auto",
+              "conditions": [
+                {
+                  "condition": "state",
+                  "entity": "input_select.inkbird_dashboard_model",
+                  "state": "Auto"
+                }
+              ],
+              "card": {
+                "type": "markdown",
+                "content": "The HACS strategy detects the model automatically. On the manual YAML route, select **INT-14-BW** or **INT-14S-BW** under Settings - Dashboard layout."
+              }
+            }
+          ]
+        },
+        {
+          "type": "grid",
+          "cards": [
+            {
+              "type": "heading",
+              "heading": "Probe 1",
+              "heading_style": "title",
+              "icon": "mdi:thermometer-probe"
+            },
+            {
+              "type": "conditional",
+              "inkbird_model": "int14_bw",
+              "conditions": [
+                {
+                  "condition": "state",
+                  "entity": "input_select.inkbird_dashboard_model",
+                  "state": "INT-14-BW"
+                }
+              ],
+              "card": {
+                "type": "picture-elements",
+                "image": "/local/int12e-probe-black.png",
+                "elements": [
+                  {
+                    "type": "state-label",
+                    "entity": "sensor.__INKBIRD_AREA_PREFIX___probe_1_internal_temperature",
+                    "tap_action": {
+                      "action": "more-info"
+                    },
+                    "style": {
+                      "left": "11.7%",
+                      "top": "29.5%",
+                      "color": "#2478c8",
+                      "font-size": "14px",
+                      "font-weight": "700",
+                      "line-height": "1",
+                      "white-space": "nowrap"
+                    }
+                  },
+                  {
+                    "type": "state-label",
+                    "entity": "sensor.__INKBIRD_AREA_PREFIX___probe_1_ambient_temperature",
+                    "tap_action": {
+                      "action": "more-info"
+                    },
+                    "style": {
+                      "left": "87.4%",
+                      "top": "29.5%",
+                      "color": "#9344a1",
+                      "font-size": "14px",
+                      "font-weight": "700",
+                      "line-height": "1",
+                      "white-space": "nowrap"
+                    }
+                  }
+                ]
+              }
+            },
+            {
+              "type": "conditional",
+              "inkbird_model": "int14s_bw",
+              "conditions": [
+                {
+                  "condition": "state",
+                  "entity": "input_select.inkbird_dashboard_model",
+                  "state": "INT-14S-BW"
+                }
+              ],
+              "card": {
+                "type": "picture-elements",
+                "image": "/local/int12e-probe-black.png",
+                "elements": [
+                  {
+                    "type": "state-label",
+                    "entity": "sensor.__INKBIRD_AREA_PREFIX___probe_1_food_4_temperature",
+                    "tap_action": {
+                      "action": "more-info"
+                    },
+                    "style": {
+                      "left": "11.7%",
+                      "top": "29.5%",
+                      "color": "#2478c8",
+                      "font-size": "14px",
+                      "font-weight": "700",
+                      "line-height": "1",
+                      "white-space": "nowrap"
+                    }
+                  },
+                  {
+                    "type": "state-label",
+                    "entity": "sensor.__INKBIRD_AREA_PREFIX___probe_1_food_1_temperature",
+                    "tap_action": {
+                      "action": "more-info"
+                    },
+                    "style": {
+                      "left": "27.1%",
+                      "top": "74%",
+                      "color": "#7669bf",
+                      "font-size": "14px",
+                      "font-weight": "700",
+                      "line-height": "1",
+                      "white-space": "nowrap"
+                    }
+                  },
+                  {
+                    "type": "state-label",
+                    "entity": "sensor.__INKBIRD_AREA_PREFIX___probe_1_food_3_temperature",
+                    "tap_action": {
+                      "action": "more-info"
+                    },
+                    "style": {
+                      "left": "37.7%",
+                      "top": "29.5%",
+                      "color": "#bd9411",
+                      "font-size": "14px",
+                      "font-weight": "700",
+                      "line-height": "1",
+                      "white-space": "nowrap"
+                    }
+                  },
+                  {
+                    "type": "state-label",
+                    "entity": "sensor.__INKBIRD_AREA_PREFIX___probe_1_food_2_temperature",
+                    "tap_action": {
+                      "action": "more-info"
+                    },
+                    "style": {
+                      "left": "46.6%",
+                      "top": "74%",
+                      "color": "#49aeba",
+                      "font-size": "14px",
+                      "font-weight": "700",
+                      "line-height": "1",
+                      "white-space": "nowrap"
+                    }
+                  },
+                  {
+                    "type": "state-label",
+                    "entity": "sensor.__INKBIRD_AREA_PREFIX___probe_1_ambient_temperature",
+                    "tap_action": {
+                      "action": "more-info"
+                    },
+                    "style": {
+                      "left": "87.4%",
+                      "top": "29.5%",
+                      "color": "#9344a1",
+                      "font-size": "14px",
+                      "font-weight": "700",
+                      "line-height": "1",
+                      "white-space": "nowrap"
+                    }
+                  }
+                ]
+              }
+            },
+            {
+              "type": "conditional",
+              "inkbird_model": "int14_bw",
+              "conditions": [
+                {
+                  "condition": "state",
+                  "entity": "input_select.inkbird_dashboard_model",
+                  "state": "INT-14-BW"
+                }
+              ],
+              "card": {
+                "type": "entities",
+                "title": null,
+                "show_header_toggle": false,
+                "entities": [
+                  {
+                    "entity": "sensor.__INKBIRD_AREA_PREFIX___probe_1_internal_temperature",
+                    "name": "Internal - control"
+                  },
+                  {
+                    "entity": "sensor.__INKBIRD_AREA_PREFIX___probe_1_ambient_temperature",
+                    "name": "Ambient"
+                  },
+                  {
+                    "entity": "input_number.inkbird_target_1",
+                    "name": "Target"
+                  },
+                  {
+                    "entity": "sensor.bbq_probe_1_rate",
+                    "name": "Rate"
+                  },
+                  {
+                    "entity": "sensor.__INKBIRD_AREA_PREFIX___probe_1_battery",
+                    "name": "Battery"
+                  }
+                ]
+              }
+            },
+            {
+              "type": "conditional",
+              "inkbird_model": "int14s_bw",
+              "conditions": [
+                {
+                  "condition": "state",
+                  "entity": "input_select.inkbird_dashboard_model",
+                  "state": "INT-14S-BW"
+                }
+              ],
+              "card": {
+                "type": "entities",
+                "title": null,
+                "show_header_toggle": false,
+                "entities": [
+                  {
+                    "entity": "sensor.__INKBIRD_AREA_PREFIX___probe_1_food_4_temperature",
+                    "name": "Food 4 - tip - control"
+                  },
+                  {
+                    "entity": "sensor.__INKBIRD_AREA_PREFIX___probe_1_food_1_temperature",
+                    "name": "Food 1"
+                  },
+                  {
+                    "entity": "sensor.__INKBIRD_AREA_PREFIX___probe_1_food_2_temperature",
+                    "name": "Food 2"
+                  },
+                  {
+                    "entity": "sensor.__INKBIRD_AREA_PREFIX___probe_1_food_3_temperature",
+                    "name": "Food 3"
+                  },
+                  {
+                    "entity": "sensor.__INKBIRD_AREA_PREFIX___probe_1_ambient_temperature",
+                    "name": "Ambient"
+                  },
+                  {
+                    "entity": "input_number.inkbird_target_1",
+                    "name": "Target"
+                  },
+                  {
+                    "entity": "sensor.bbq_probe_1_rate",
+                    "name": "Rate"
+                  },
+                  {
+                    "entity": "sensor.__INKBIRD_AREA_PREFIX___probe_1_battery",
+                    "name": "Battery"
+                  }
+                ]
+              }
+            },
+            {
+              "type": "conditional",
+              "inkbird_model": "int14_bw",
+              "conditions": [
+                {
+                  "condition": "state",
+                  "entity": "input_select.inkbird_dashboard_model",
+                  "state": "INT-14-BW"
+                }
+              ],
+              "card": {
+                "type": "history-graph",
+                "title": "Last hour",
+                "hours_to_show": 1,
+                "entities": [
+                  {
+                    "entity": "sensor.__INKBIRD_AREA_PREFIX___probe_1_internal_temperature",
+                    "name": "Internal"
+                  },
+                  {
+                    "entity": "sensor.__INKBIRD_AREA_PREFIX___probe_1_ambient_temperature",
+                    "name": "Ambient"
+                  },
+                  {
+                    "entity": "input_number.inkbird_target_1",
+                    "name": "Target"
+                  }
+                ]
+              }
+            },
+            {
+              "type": "conditional",
+              "inkbird_model": "int14s_bw",
+              "conditions": [
+                {
+                  "condition": "state",
+                  "entity": "input_select.inkbird_dashboard_model",
+                  "state": "INT-14S-BW"
+                }
+              ],
+              "card": {
+                "type": "history-graph",
+                "title": "Last hour",
+                "hours_to_show": 1,
+                "entities": [
+                  {
+                    "entity": "sensor.__INKBIRD_AREA_PREFIX___probe_1_food_4_temperature",
+                    "name": "Tip"
+                  },
+                  {
+                    "entity": "sensor.__INKBIRD_AREA_PREFIX___probe_1_food_1_temperature",
+                    "name": "Food 1"
+                  },
+                  {
+                    "entity": "sensor.__INKBIRD_AREA_PREFIX___probe_1_food_2_temperature",
+                    "name": "Food 2"
+                  },
+                  {
+                    "entity": "sensor.__INKBIRD_AREA_PREFIX___probe_1_food_3_temperature",
+                    "name": "Food 3"
+                  },
+                  {
+                    "entity": "sensor.__INKBIRD_AREA_PREFIX___probe_1_ambient_temperature",
+                    "name": "Ambient"
+                  },
+                  {
+                    "entity": "input_number.inkbird_target_1",
+                    "name": "Target"
+                  }
+                ]
+              }
+            }
+          ]
+        },
+        {
+          "type": "grid",
+          "cards": [
+            {
+              "type": "heading",
+              "heading": "Probe 2",
+              "heading_style": "title",
+              "icon": "mdi:thermometer-probe"
+            },
+            {
+              "type": "conditional",
+              "inkbird_model": "int14_bw",
+              "conditions": [
+                {
+                  "condition": "state",
+                  "entity": "input_select.inkbird_dashboard_model",
+                  "state": "INT-14-BW"
+                }
+              ],
+              "card": {
+                "type": "picture-elements",
+                "image": "/local/int12e-probe-white.png",
+                "elements": [
+                  {
+                    "type": "state-label",
+                    "entity": "sensor.__INKBIRD_AREA_PREFIX___probe_2_internal_temperature",
+                    "tap_action": {
+                      "action": "more-info"
+                    },
+                    "style": {
+                      "left": "11.7%",
+                      "top": "29.5%",
+                      "color": "#2478c8",
+                      "font-size": "14px",
+                      "font-weight": "700",
+                      "line-height": "1",
+                      "white-space": "nowrap"
+                    }
+                  },
+                  {
+                    "type": "state-label",
+                    "entity": "sensor.__INKBIRD_AREA_PREFIX___probe_2_ambient_temperature",
+                    "tap_action": {
+                      "action": "more-info"
+                    },
+                    "style": {
+                      "left": "87.4%",
+                      "top": "29.5%",
+                      "color": "#9344a1",
+                      "font-size": "14px",
+                      "font-weight": "700",
+                      "line-height": "1",
+                      "white-space": "nowrap"
+                    }
+                  }
+                ]
+              }
+            },
+            {
+              "type": "conditional",
+              "inkbird_model": "int14s_bw",
+              "conditions": [
+                {
+                  "condition": "state",
+                  "entity": "input_select.inkbird_dashboard_model",
+                  "state": "INT-14S-BW"
+                }
+              ],
+              "card": {
+                "type": "picture-elements",
+                "image": "/local/int12e-probe-white.png",
+                "elements": [
+                  {
+                    "type": "state-label",
+                    "entity": "sensor.__INKBIRD_AREA_PREFIX___probe_2_food_4_temperature",
+                    "tap_action": {
+                      "action": "more-info"
+                    },
+                    "style": {
+                      "left": "11.7%",
+                      "top": "29.5%",
+                      "color": "#2478c8",
+                      "font-size": "14px",
+                      "font-weight": "700",
+                      "line-height": "1",
+                      "white-space": "nowrap"
+                    }
+                  },
+                  {
+                    "type": "state-label",
+                    "entity": "sensor.__INKBIRD_AREA_PREFIX___probe_2_food_1_temperature",
+                    "tap_action": {
+                      "action": "more-info"
+                    },
+                    "style": {
+                      "left": "27.1%",
+                      "top": "74%",
+                      "color": "#7669bf",
+                      "font-size": "14px",
+                      "font-weight": "700",
+                      "line-height": "1",
+                      "white-space": "nowrap"
+                    }
+                  },
+                  {
+                    "type": "state-label",
+                    "entity": "sensor.__INKBIRD_AREA_PREFIX___probe_2_food_3_temperature",
+                    "tap_action": {
+                      "action": "more-info"
+                    },
+                    "style": {
+                      "left": "37.7%",
+                      "top": "29.5%",
+                      "color": "#bd9411",
+                      "font-size": "14px",
+                      "font-weight": "700",
+                      "line-height": "1",
+                      "white-space": "nowrap"
+                    }
+                  },
+                  {
+                    "type": "state-label",
+                    "entity": "sensor.__INKBIRD_AREA_PREFIX___probe_2_food_2_temperature",
+                    "tap_action": {
+                      "action": "more-info"
+                    },
+                    "style": {
+                      "left": "46.6%",
+                      "top": "74%",
+                      "color": "#49aeba",
+                      "font-size": "14px",
+                      "font-weight": "700",
+                      "line-height": "1",
+                      "white-space": "nowrap"
+                    }
+                  },
+                  {
+                    "type": "state-label",
+                    "entity": "sensor.__INKBIRD_AREA_PREFIX___probe_2_ambient_temperature",
+                    "tap_action": {
+                      "action": "more-info"
+                    },
+                    "style": {
+                      "left": "87.4%",
+                      "top": "29.5%",
+                      "color": "#9344a1",
+                      "font-size": "14px",
+                      "font-weight": "700",
+                      "line-height": "1",
+                      "white-space": "nowrap"
+                    }
+                  }
+                ]
+              }
+            },
+            {
+              "type": "conditional",
+              "inkbird_model": "int14_bw",
+              "conditions": [
+                {
+                  "condition": "state",
+                  "entity": "input_select.inkbird_dashboard_model",
+                  "state": "INT-14-BW"
+                }
+              ],
+              "card": {
+                "type": "entities",
+                "title": null,
+                "show_header_toggle": false,
+                "entities": [
+                  {
+                    "entity": "sensor.__INKBIRD_AREA_PREFIX___probe_2_internal_temperature",
+                    "name": "Internal - control"
+                  },
+                  {
+                    "entity": "sensor.__INKBIRD_AREA_PREFIX___probe_2_ambient_temperature",
+                    "name": "Ambient"
+                  },
+                  {
+                    "entity": "input_number.inkbird_target_2",
+                    "name": "Target"
+                  },
+                  {
+                    "entity": "sensor.bbq_probe_2_rate",
+                    "name": "Rate"
+                  },
+                  {
+                    "entity": "sensor.__INKBIRD_AREA_PREFIX___probe_2_battery",
+                    "name": "Battery"
+                  }
+                ]
+              }
+            },
+            {
+              "type": "conditional",
+              "inkbird_model": "int14s_bw",
+              "conditions": [
+                {
+                  "condition": "state",
+                  "entity": "input_select.inkbird_dashboard_model",
+                  "state": "INT-14S-BW"
+                }
+              ],
+              "card": {
+                "type": "entities",
+                "title": null,
+                "show_header_toggle": false,
+                "entities": [
+                  {
+                    "entity": "sensor.__INKBIRD_AREA_PREFIX___probe_2_food_4_temperature",
+                    "name": "Food 4 - tip - control"
+                  },
+                  {
+                    "entity": "sensor.__INKBIRD_AREA_PREFIX___probe_2_food_1_temperature",
+                    "name": "Food 1"
+                  },
+                  {
+                    "entity": "sensor.__INKBIRD_AREA_PREFIX___probe_2_food_2_temperature",
+                    "name": "Food 2"
+                  },
+                  {
+                    "entity": "sensor.__INKBIRD_AREA_PREFIX___probe_2_food_3_temperature",
+                    "name": "Food 3"
+                  },
+                  {
+                    "entity": "sensor.__INKBIRD_AREA_PREFIX___probe_2_ambient_temperature",
+                    "name": "Ambient"
+                  },
+                  {
+                    "entity": "input_number.inkbird_target_2",
+                    "name": "Target"
+                  },
+                  {
+                    "entity": "sensor.bbq_probe_2_rate",
+                    "name": "Rate"
+                  },
+                  {
+                    "entity": "sensor.__INKBIRD_AREA_PREFIX___probe_2_battery",
+                    "name": "Battery"
+                  }
+                ]
+              }
+            },
+            {
+              "type": "conditional",
+              "inkbird_model": "int14_bw",
+              "conditions": [
+                {
+                  "condition": "state",
+                  "entity": "input_select.inkbird_dashboard_model",
+                  "state": "INT-14-BW"
+                }
+              ],
+              "card": {
+                "type": "history-graph",
+                "title": "Last hour",
+                "hours_to_show": 1,
+                "entities": [
+                  {
+                    "entity": "sensor.__INKBIRD_AREA_PREFIX___probe_2_internal_temperature",
+                    "name": "Internal"
+                  },
+                  {
+                    "entity": "sensor.__INKBIRD_AREA_PREFIX___probe_2_ambient_temperature",
+                    "name": "Ambient"
+                  },
+                  {
+                    "entity": "input_number.inkbird_target_2",
+                    "name": "Target"
+                  }
+                ]
+              }
+            },
+            {
+              "type": "conditional",
+              "inkbird_model": "int14s_bw",
+              "conditions": [
+                {
+                  "condition": "state",
+                  "entity": "input_select.inkbird_dashboard_model",
+                  "state": "INT-14S-BW"
+                }
+              ],
+              "card": {
+                "type": "history-graph",
+                "title": "Last hour",
+                "hours_to_show": 1,
+                "entities": [
+                  {
+                    "entity": "sensor.__INKBIRD_AREA_PREFIX___probe_2_food_4_temperature",
+                    "name": "Tip"
+                  },
+                  {
+                    "entity": "sensor.__INKBIRD_AREA_PREFIX___probe_2_food_1_temperature",
+                    "name": "Food 1"
+                  },
+                  {
+                    "entity": "sensor.__INKBIRD_AREA_PREFIX___probe_2_food_2_temperature",
+                    "name": "Food 2"
+                  },
+                  {
+                    "entity": "sensor.__INKBIRD_AREA_PREFIX___probe_2_food_3_temperature",
+                    "name": "Food 3"
+                  },
+                  {
+                    "entity": "sensor.__INKBIRD_AREA_PREFIX___probe_2_ambient_temperature",
+                    "name": "Ambient"
+                  },
+                  {
+                    "entity": "input_number.inkbird_target_2",
+                    "name": "Target"
+                  }
+                ]
+              }
+            }
+          ]
+        },
+        {
+          "type": "grid",
+          "cards": [
+            {
+              "type": "heading",
+              "heading": "Probe 3",
+              "heading_style": "title",
+              "icon": "mdi:thermometer-probe"
+            },
+            {
+              "type": "conditional",
+              "inkbird_model": "int14_bw",
+              "conditions": [
+                {
+                  "condition": "state",
+                  "entity": "input_select.inkbird_dashboard_model",
+                  "state": "INT-14-BW"
+                }
+              ],
+              "card": {
+                "type": "picture-elements",
+                "image": "/local/int12e-probe-black.png",
+                "elements": [
+                  {
+                    "type": "state-label",
+                    "entity": "sensor.__INKBIRD_AREA_PREFIX___probe_3_internal_temperature",
+                    "tap_action": {
+                      "action": "more-info"
+                    },
+                    "style": {
+                      "left": "11.7%",
+                      "top": "29.5%",
+                      "color": "#2478c8",
+                      "font-size": "14px",
+                      "font-weight": "700",
+                      "line-height": "1",
+                      "white-space": "nowrap"
+                    }
+                  },
+                  {
+                    "type": "state-label",
+                    "entity": "sensor.__INKBIRD_AREA_PREFIX___probe_3_ambient_temperature",
+                    "tap_action": {
+                      "action": "more-info"
+                    },
+                    "style": {
+                      "left": "87.4%",
+                      "top": "29.5%",
+                      "color": "#9344a1",
+                      "font-size": "14px",
+                      "font-weight": "700",
+                      "line-height": "1",
+                      "white-space": "nowrap"
+                    }
+                  }
+                ]
+              }
+            },
+            {
+              "type": "conditional",
+              "inkbird_model": "int14s_bw",
+              "conditions": [
+                {
+                  "condition": "state",
+                  "entity": "input_select.inkbird_dashboard_model",
+                  "state": "INT-14S-BW"
+                }
+              ],
+              "card": {
+                "type": "picture-elements",
+                "image": "/local/int12e-probe-black.png",
+                "elements": [
+                  {
+                    "type": "state-label",
+                    "entity": "sensor.__INKBIRD_AREA_PREFIX___probe_3_food_4_temperature",
+                    "tap_action": {
+                      "action": "more-info"
+                    },
+                    "style": {
+                      "left": "11.7%",
+                      "top": "29.5%",
+                      "color": "#2478c8",
+                      "font-size": "14px",
+                      "font-weight": "700",
+                      "line-height": "1",
+                      "white-space": "nowrap"
+                    }
+                  },
+                  {
+                    "type": "state-label",
+                    "entity": "sensor.__INKBIRD_AREA_PREFIX___probe_3_food_1_temperature",
+                    "tap_action": {
+                      "action": "more-info"
+                    },
+                    "style": {
+                      "left": "27.1%",
+                      "top": "74%",
+                      "color": "#7669bf",
+                      "font-size": "14px",
+                      "font-weight": "700",
+                      "line-height": "1",
+                      "white-space": "nowrap"
+                    }
+                  },
+                  {
+                    "type": "state-label",
+                    "entity": "sensor.__INKBIRD_AREA_PREFIX___probe_3_food_3_temperature",
+                    "tap_action": {
+                      "action": "more-info"
+                    },
+                    "style": {
+                      "left": "37.7%",
+                      "top": "29.5%",
+                      "color": "#bd9411",
+                      "font-size": "14px",
+                      "font-weight": "700",
+                      "line-height": "1",
+                      "white-space": "nowrap"
+                    }
+                  },
+                  {
+                    "type": "state-label",
+                    "entity": "sensor.__INKBIRD_AREA_PREFIX___probe_3_food_2_temperature",
+                    "tap_action": {
+                      "action": "more-info"
+                    },
+                    "style": {
+                      "left": "46.6%",
+                      "top": "74%",
+                      "color": "#49aeba",
+                      "font-size": "14px",
+                      "font-weight": "700",
+                      "line-height": "1",
+                      "white-space": "nowrap"
+                    }
+                  },
+                  {
+                    "type": "state-label",
+                    "entity": "sensor.__INKBIRD_AREA_PREFIX___probe_3_ambient_temperature",
+                    "tap_action": {
+                      "action": "more-info"
+                    },
+                    "style": {
+                      "left": "87.4%",
+                      "top": "29.5%",
+                      "color": "#9344a1",
+                      "font-size": "14px",
+                      "font-weight": "700",
+                      "line-height": "1",
+                      "white-space": "nowrap"
+                    }
+                  }
+                ]
+              }
+            },
+            {
+              "type": "conditional",
+              "inkbird_model": "int14_bw",
+              "conditions": [
+                {
+                  "condition": "state",
+                  "entity": "input_select.inkbird_dashboard_model",
+                  "state": "INT-14-BW"
+                }
+              ],
+              "card": {
+                "type": "entities",
+                "title": null,
+                "show_header_toggle": false,
+                "entities": [
+                  {
+                    "entity": "sensor.__INKBIRD_AREA_PREFIX___probe_3_internal_temperature",
+                    "name": "Internal - control"
+                  },
+                  {
+                    "entity": "sensor.__INKBIRD_AREA_PREFIX___probe_3_ambient_temperature",
+                    "name": "Ambient"
+                  },
+                  {
+                    "entity": "input_number.inkbird_target_3",
+                    "name": "Target"
+                  },
+                  {
+                    "entity": "sensor.bbq_probe_3_rate",
+                    "name": "Rate"
+                  },
+                  {
+                    "entity": "sensor.__INKBIRD_AREA_PREFIX___probe_3_battery",
+                    "name": "Battery"
+                  }
+                ]
+              }
+            },
+            {
+              "type": "conditional",
+              "inkbird_model": "int14s_bw",
+              "conditions": [
+                {
+                  "condition": "state",
+                  "entity": "input_select.inkbird_dashboard_model",
+                  "state": "INT-14S-BW"
+                }
+              ],
+              "card": {
+                "type": "entities",
+                "title": null,
+                "show_header_toggle": false,
+                "entities": [
+                  {
+                    "entity": "sensor.__INKBIRD_AREA_PREFIX___probe_3_food_4_temperature",
+                    "name": "Food 4 - tip - control"
+                  },
+                  {
+                    "entity": "sensor.__INKBIRD_AREA_PREFIX___probe_3_food_1_temperature",
+                    "name": "Food 1"
+                  },
+                  {
+                    "entity": "sensor.__INKBIRD_AREA_PREFIX___probe_3_food_2_temperature",
+                    "name": "Food 2"
+                  },
+                  {
+                    "entity": "sensor.__INKBIRD_AREA_PREFIX___probe_3_food_3_temperature",
+                    "name": "Food 3"
+                  },
+                  {
+                    "entity": "sensor.__INKBIRD_AREA_PREFIX___probe_3_ambient_temperature",
+                    "name": "Ambient"
+                  },
+                  {
+                    "entity": "input_number.inkbird_target_3",
+                    "name": "Target"
+                  },
+                  {
+                    "entity": "sensor.bbq_probe_3_rate",
+                    "name": "Rate"
+                  },
+                  {
+                    "entity": "sensor.__INKBIRD_AREA_PREFIX___probe_3_battery",
+                    "name": "Battery"
+                  }
+                ]
+              }
+            },
+            {
+              "type": "conditional",
+              "inkbird_model": "int14_bw",
+              "conditions": [
+                {
+                  "condition": "state",
+                  "entity": "input_select.inkbird_dashboard_model",
+                  "state": "INT-14-BW"
+                }
+              ],
+              "card": {
+                "type": "history-graph",
+                "title": "Last hour",
+                "hours_to_show": 1,
+                "entities": [
+                  {
+                    "entity": "sensor.__INKBIRD_AREA_PREFIX___probe_3_internal_temperature",
+                    "name": "Internal"
+                  },
+                  {
+                    "entity": "sensor.__INKBIRD_AREA_PREFIX___probe_3_ambient_temperature",
+                    "name": "Ambient"
+                  },
+                  {
+                    "entity": "input_number.inkbird_target_3",
+                    "name": "Target"
+                  }
+                ]
+              }
+            },
+            {
+              "type": "conditional",
+              "inkbird_model": "int14s_bw",
+              "conditions": [
+                {
+                  "condition": "state",
+                  "entity": "input_select.inkbird_dashboard_model",
+                  "state": "INT-14S-BW"
+                }
+              ],
+              "card": {
+                "type": "history-graph",
+                "title": "Last hour",
+                "hours_to_show": 1,
+                "entities": [
+                  {
+                    "entity": "sensor.__INKBIRD_AREA_PREFIX___probe_3_food_4_temperature",
+                    "name": "Tip"
+                  },
+                  {
+                    "entity": "sensor.__INKBIRD_AREA_PREFIX___probe_3_food_1_temperature",
+                    "name": "Food 1"
+                  },
+                  {
+                    "entity": "sensor.__INKBIRD_AREA_PREFIX___probe_3_food_2_temperature",
+                    "name": "Food 2"
+                  },
+                  {
+                    "entity": "sensor.__INKBIRD_AREA_PREFIX___probe_3_food_3_temperature",
+                    "name": "Food 3"
+                  },
+                  {
+                    "entity": "sensor.__INKBIRD_AREA_PREFIX___probe_3_ambient_temperature",
+                    "name": "Ambient"
+                  },
+                  {
+                    "entity": "input_number.inkbird_target_3",
+                    "name": "Target"
+                  }
+                ]
+              }
+            }
+          ]
+        },
+        {
+          "type": "grid",
+          "cards": [
+            {
+              "type": "heading",
+              "heading": "Probe 4",
+              "heading_style": "title",
+              "icon": "mdi:thermometer-probe"
+            },
+            {
+              "type": "conditional",
+              "inkbird_model": "int14_bw",
+              "conditions": [
+                {
+                  "condition": "state",
+                  "entity": "input_select.inkbird_dashboard_model",
+                  "state": "INT-14-BW"
+                }
+              ],
+              "card": {
+                "type": "picture-elements",
+                "image": "/local/int12e-probe-white.png",
+                "elements": [
+                  {
+                    "type": "state-label",
+                    "entity": "sensor.__INKBIRD_AREA_PREFIX___probe_4_internal_temperature",
+                    "tap_action": {
+                      "action": "more-info"
+                    },
+                    "style": {
+                      "left": "11.7%",
+                      "top": "29.5%",
+                      "color": "#2478c8",
+                      "font-size": "14px",
+                      "font-weight": "700",
+                      "line-height": "1",
+                      "white-space": "nowrap"
+                    }
+                  },
+                  {
+                    "type": "state-label",
+                    "entity": "sensor.__INKBIRD_AREA_PREFIX___probe_4_ambient_temperature",
+                    "tap_action": {
+                      "action": "more-info"
+                    },
+                    "style": {
+                      "left": "87.4%",
+                      "top": "29.5%",
+                      "color": "#9344a1",
+                      "font-size": "14px",
+                      "font-weight": "700",
+                      "line-height": "1",
+                      "white-space": "nowrap"
+                    }
+                  }
+                ]
+              }
+            },
+            {
+              "type": "conditional",
+              "inkbird_model": "int14s_bw",
+              "conditions": [
+                {
+                  "condition": "state",
+                  "entity": "input_select.inkbird_dashboard_model",
+                  "state": "INT-14S-BW"
+                }
+              ],
+              "card": {
+                "type": "picture-elements",
+                "image": "/local/int12e-probe-white.png",
+                "elements": [
+                  {
+                    "type": "state-label",
+                    "entity": "sensor.__INKBIRD_AREA_PREFIX___probe_4_food_4_temperature",
+                    "tap_action": {
+                      "action": "more-info"
+                    },
+                    "style": {
+                      "left": "11.7%",
+                      "top": "29.5%",
+                      "color": "#2478c8",
+                      "font-size": "14px",
+                      "font-weight": "700",
+                      "line-height": "1",
+                      "white-space": "nowrap"
+                    }
+                  },
+                  {
+                    "type": "state-label",
+                    "entity": "sensor.__INKBIRD_AREA_PREFIX___probe_4_food_1_temperature",
+                    "tap_action": {
+                      "action": "more-info"
+                    },
+                    "style": {
+                      "left": "27.1%",
+                      "top": "74%",
+                      "color": "#7669bf",
+                      "font-size": "14px",
+                      "font-weight": "700",
+                      "line-height": "1",
+                      "white-space": "nowrap"
+                    }
+                  },
+                  {
+                    "type": "state-label",
+                    "entity": "sensor.__INKBIRD_AREA_PREFIX___probe_4_food_3_temperature",
+                    "tap_action": {
+                      "action": "more-info"
+                    },
+                    "style": {
+                      "left": "37.7%",
+                      "top": "29.5%",
+                      "color": "#bd9411",
+                      "font-size": "14px",
+                      "font-weight": "700",
+                      "line-height": "1",
+                      "white-space": "nowrap"
+                    }
+                  },
+                  {
+                    "type": "state-label",
+                    "entity": "sensor.__INKBIRD_AREA_PREFIX___probe_4_food_2_temperature",
+                    "tap_action": {
+                      "action": "more-info"
+                    },
+                    "style": {
+                      "left": "46.6%",
+                      "top": "74%",
+                      "color": "#49aeba",
+                      "font-size": "14px",
+                      "font-weight": "700",
+                      "line-height": "1",
+                      "white-space": "nowrap"
+                    }
+                  },
+                  {
+                    "type": "state-label",
+                    "entity": "sensor.__INKBIRD_AREA_PREFIX___probe_4_ambient_temperature",
+                    "tap_action": {
+                      "action": "more-info"
+                    },
+                    "style": {
+                      "left": "87.4%",
+                      "top": "29.5%",
+                      "color": "#9344a1",
+                      "font-size": "14px",
+                      "font-weight": "700",
+                      "line-height": "1",
+                      "white-space": "nowrap"
+                    }
+                  }
+                ]
+              }
+            },
+            {
+              "type": "conditional",
+              "inkbird_model": "int14_bw",
+              "conditions": [
+                {
+                  "condition": "state",
+                  "entity": "input_select.inkbird_dashboard_model",
+                  "state": "INT-14-BW"
+                }
+              ],
+              "card": {
+                "type": "entities",
+                "title": null,
+                "show_header_toggle": false,
+                "entities": [
+                  {
+                    "entity": "sensor.__INKBIRD_AREA_PREFIX___probe_4_internal_temperature",
+                    "name": "Internal - control"
+                  },
+                  {
+                    "entity": "sensor.__INKBIRD_AREA_PREFIX___probe_4_ambient_temperature",
+                    "name": "Ambient"
+                  },
+                  {
+                    "entity": "input_number.inkbird_target_4",
+                    "name": "Target"
+                  },
+                  {
+                    "entity": "sensor.bbq_probe_4_rate",
+                    "name": "Rate"
+                  },
+                  {
+                    "entity": "sensor.__INKBIRD_AREA_PREFIX___probe_4_battery",
+                    "name": "Battery"
+                  }
+                ]
+              }
+            },
+            {
+              "type": "conditional",
+              "inkbird_model": "int14s_bw",
+              "conditions": [
+                {
+                  "condition": "state",
+                  "entity": "input_select.inkbird_dashboard_model",
+                  "state": "INT-14S-BW"
+                }
+              ],
+              "card": {
+                "type": "entities",
+                "title": null,
+                "show_header_toggle": false,
+                "entities": [
+                  {
+                    "entity": "sensor.__INKBIRD_AREA_PREFIX___probe_4_food_4_temperature",
+                    "name": "Food 4 - tip - control"
+                  },
+                  {
+                    "entity": "sensor.__INKBIRD_AREA_PREFIX___probe_4_food_1_temperature",
+                    "name": "Food 1"
+                  },
+                  {
+                    "entity": "sensor.__INKBIRD_AREA_PREFIX___probe_4_food_2_temperature",
+                    "name": "Food 2"
+                  },
+                  {
+                    "entity": "sensor.__INKBIRD_AREA_PREFIX___probe_4_food_3_temperature",
+                    "name": "Food 3"
+                  },
+                  {
+                    "entity": "sensor.__INKBIRD_AREA_PREFIX___probe_4_ambient_temperature",
+                    "name": "Ambient"
+                  },
+                  {
+                    "entity": "input_number.inkbird_target_4",
+                    "name": "Target"
+                  },
+                  {
+                    "entity": "sensor.bbq_probe_4_rate",
+                    "name": "Rate"
+                  },
+                  {
+                    "entity": "sensor.__INKBIRD_AREA_PREFIX___probe_4_battery",
+                    "name": "Battery"
+                  }
+                ]
+              }
+            },
+            {
+              "type": "conditional",
+              "inkbird_model": "int14_bw",
+              "conditions": [
+                {
+                  "condition": "state",
+                  "entity": "input_select.inkbird_dashboard_model",
+                  "state": "INT-14-BW"
+                }
+              ],
+              "card": {
+                "type": "history-graph",
+                "title": "Last hour",
+                "hours_to_show": 1,
+                "entities": [
+                  {
+                    "entity": "sensor.__INKBIRD_AREA_PREFIX___probe_4_internal_temperature",
+                    "name": "Internal"
+                  },
+                  {
+                    "entity": "sensor.__INKBIRD_AREA_PREFIX___probe_4_ambient_temperature",
+                    "name": "Ambient"
+                  },
+                  {
+                    "entity": "input_number.inkbird_target_4",
+                    "name": "Target"
+                  }
+                ]
+              }
+            },
+            {
+              "type": "conditional",
+              "inkbird_model": "int14s_bw",
+              "conditions": [
+                {
+                  "condition": "state",
+                  "entity": "input_select.inkbird_dashboard_model",
+                  "state": "INT-14S-BW"
+                }
+              ],
+              "card": {
+                "type": "history-graph",
+                "title": "Last hour",
+                "hours_to_show": 1,
+                "entities": [
+                  {
+                    "entity": "sensor.__INKBIRD_AREA_PREFIX___probe_4_food_4_temperature",
+                    "name": "Tip"
+                  },
+                  {
+                    "entity": "sensor.__INKBIRD_AREA_PREFIX___probe_4_food_1_temperature",
+                    "name": "Food 1"
+                  },
+                  {
+                    "entity": "sensor.__INKBIRD_AREA_PREFIX___probe_4_food_2_temperature",
+                    "name": "Food 2"
+                  },
+                  {
+                    "entity": "sensor.__INKBIRD_AREA_PREFIX___probe_4_food_3_temperature",
+                    "name": "Food 3"
+                  },
+                  {
+                    "entity": "sensor.__INKBIRD_AREA_PREFIX___probe_4_ambient_temperature",
+                    "name": "Ambient"
+                  },
+                  {
+                    "entity": "input_number.inkbird_target_4",
+                    "name": "Target"
+                  }
+                ]
+              }
+            }
+          ]
+        }
+      ]
+    },
+    {
+      "title": "Settings",
+      "path": "settings",
+      "icon": "mdi:cog",
+      "type": "sections",
+      "max_columns": 3,
+      "header": {
+        "layout": "center",
+        "badges_position": "bottom",
+        "badges_wrap": "wrap",
+        "card": {
+          "type": "markdown",
+          "text_only": true,
+          "content": "## Settings\nModel-aware controls and diagnostics. Unsupported entities are omitted by the HACS strategy instead of being shown as unknown.\n"
+        }
+      },
+      "sections": [
+        {
+          "type": "grid",
+          "cards": [
+            {
+              "type": "heading",
+              "heading": "Overview",
+              "heading_style": "title",
+              "icon": "mdi:grill"
+            },
+            {
+              "type": "entities",
+              "title": null,
+              "show_header_toggle": false,
+              "entities": [
+                {
+                  "entity": "input_select.inkbird_dashboard_model",
+                  "name": "Dashboard layout"
+                },
+                {
+                  "entity": "sensor.__INKBIRD_DEVICE___configured_model",
+                  "name": "Integration model"
+                },
+                {
+                  "entity": "sensor.__INKBIRD_DEVICE___physical_probe_count",
+                  "name": "Physical probes"
+                },
+                {
+                  "entity": "sensor.__INKBIRD_DEVICE___mapped_live_temperature_channel_count",
+                  "name": "Live temperature channels"
+                },
+                {
+                  "entity": "sensor.__INKBIRD_AREA_PREFIX___base_temperature",
+                  "name": "Base temperature"
+                },
+                {
+                  "entity": "sensor.__INKBIRD_AREA_PREFIX___base_battery",
+                  "name": "Base battery"
+                },
+                {
+                  "entity": "sensor.__INKBIRD_DEVICE___model_support_status",
+                  "name": "Model support"
+                }
+              ]
+            }
+          ]
+        },
+        {
+          "type": "grid",
+          "cards": [
+            {
+              "type": "heading",
+              "heading": "Connection",
+              "heading_style": "title",
+              "icon": "mdi:connection"
+            },
+            {
+              "type": "entities",
+              "title": null,
+              "show_header_toggle": false,
+              "entities": [
+                {
+                  "entity": "select.__INKBIRD_DEVICE___transport_mode",
+                  "name": "Transport mode"
+                },
+                {
+                  "entity": "sensor.__INKBIRD_DEVICE___active_transport",
+                  "name": "Active transport"
+                },
+                {
+                  "entity": "binary_sensor.__INKBIRD_DEVICE___ble_connected",
+                  "name": "Bluetooth"
+                },
+                {
+                  "entity": "binary_sensor.__INKBIRD_DEVICE___wi_fi_connected",
+                  "name": "Wi-Fi"
+                },
+                {
+                  "entity": "sensor.__INKBIRD_DEVICE___local_lan_available",
+                  "name": "Local LAN available"
+                },
+                {
+                  "entity": "sensor.__INKBIRD_DEVICE___last_ble_update_epoch",
+                  "name": "Last BLE update"
+                },
+                {
+                  "entity": "sensor.__INKBIRD_DEVICE___last_lan_update_epoch",
+                  "name": "Last LAN update"
+                }
+              ]
+            },
+            {
+              "type": "button",
+              "entity": "button.__INKBIRD_DEVICE___request_snapshot",
+              "name": "Request fresh snapshot",
+              "icon": "mdi:refresh"
+            }
+          ]
+        },
+        {
+          "type": "grid",
+          "cards": [
+            {
+              "type": "heading",
+              "heading": "Device controls",
+              "heading_style": "title",
+              "icon": "mdi:tune-vertical"
+            },
+            {
+              "type": "conditional",
+              "inkbird_model": "int14_bw",
+              "conditions": [
+                {
+                  "condition": "state",
+                  "entity": "input_select.inkbird_dashboard_model",
+                  "state": "INT-14-BW"
+                }
+              ],
+              "card": {
+                "type": "entities",
+                "title": "INT-14-BW",
+                "show_header_toggle": false,
+                "entities": [
+                  {
+                    "entity": "number.__INKBIRD_AREA_PREFIX___display_light_command",
+                    "name": "Display brightness"
+                  },
+                  {
+                    "entity": "binary_sensor.__INKBIRD_DEVICE___sound_enabled",
+                    "name": "Station sound"
+                  },
+                  {
+                    "entity": "binary_sensor.__INKBIRD_DEVICE___muted",
+                    "name": "Muted"
+                  },
+                  {
+                    "entity": "sensor.__INKBIRD_DEVICE___temperature_unit",
+                    "name": "Station temperature unit"
+                  }
+                ]
+              }
+            },
+            {
+              "type": "conditional",
+              "inkbird_model": "int14s_bw",
+              "conditions": [
+                {
+                  "condition": "state",
+                  "entity": "input_select.inkbird_dashboard_model",
+                  "state": "INT-14S-BW"
+                }
+              ],
+              "card": {
+                "type": "entities",
+                "title": "INT-14S-BW - read-only",
+                "show_header_toggle": false,
+                "entities": [
+                  {
+                    "entity": "sensor.__INKBIRD_DEVICE___display_light",
+                    "name": "Display brightness"
+                  },
+                  {
+                    "entity": "sensor.__INKBIRD_DEVICE___temperature_unit",
+                    "name": "Station temperature unit"
+                  }
+                ]
+              }
+            },
+            {
+              "type": "markdown",
+              "content": "Display brightness is writable only when the integration exposes **Display Light Command**. Station sound is shown as status; a toggle is inserted automatically when a future integration version exposes a writable sound switch.\n"
+            }
+          ]
+        },
+        {
+          "type": "grid",
+          "cards": [
+            {
+              "type": "heading",
+              "heading": "Batteries",
+              "heading_style": "title",
+              "icon": "mdi:battery-heart-variant"
+            },
+            {
+              "type": "entities",
+              "title": null,
+              "show_header_toggle": false,
+              "entities": [
+                {
+                  "entity": "sensor.__INKBIRD_AREA_PREFIX___base_battery",
+                  "name": "Base station"
+                },
+                {
+                  "entity": "sensor.__INKBIRD_AREA_PREFIX___probe_1_battery",
+                  "name": "Probe 1"
+                },
+                {
+                  "entity": "sensor.__INKBIRD_AREA_PREFIX___probe_2_battery",
+                  "name": "Probe 2"
+                },
+                {
+                  "entity": "sensor.__INKBIRD_AREA_PREFIX___probe_3_battery",
+                  "name": "Probe 3"
+                },
+                {
+                  "entity": "sensor.__INKBIRD_AREA_PREFIX___probe_4_battery",
+                  "name": "Probe 4"
+                },
+                {
+                  "entity": "sensor.__INKBIRD_DEVICE___battery_report_quality",
+                  "name": "Report quality"
+                },
+                {
+                  "entity": "sensor.__INKBIRD_DEVICE___battery_data_age",
+                  "name": "Data age"
+                },
+                {
+                  "entity": "sensor.__INKBIRD_DEVICE___last_battery_transport",
+                  "name": "Source"
+                }
+              ]
+            }
+          ]
+        },
+        {
+          "type": "grid",
+          "cards": [
+            {
+              "type": "heading",
+              "heading": "Dashboard preferences",
+              "heading_style": "title",
+              "icon": "mdi:palette"
+            },
+            {
+              "type": "entities",
+              "title": null,
+              "show_header_toggle": false,
+              "entities": [
+                {
+                  "entity": "input_select.bbq_style",
+                  "name": "Card style"
+                },
+                {
+                  "entity": "input_select.bbq_accent",
+                  "name": "Accent colour"
+                },
+                {
+                  "entity": "input_select.inkbird_unit",
+                  "name": "Display unit"
+                },
+                {
+                  "entity": "input_number.bbq_graph_max",
+                  "name": "Graph top temperature"
+                },
+                {
+                  "entity": "input_select.inkbird_active_probe",
+                  "name": "Active probe"
+                },
+                {
+                  "entity": "input_boolean.bbq_show_help",
+                  "name": "Show diagnostics"
+                }
+              ]
+            }
+          ]
+        },
+        {
+          "type": "grid",
+          "cards": [
+            {
+              "type": "heading",
+              "heading": "Alerts and announcements",
+              "heading_style": "title",
+              "icon": "mdi:bell-alert"
+            },
+            {
+              "type": "entities",
+              "title": null,
+              "show_header_toggle": false,
+              "entities": [
+                {
+                  "entity": "input_boolean.bbq_battery_alerts",
+                  "name": "Low battery alerts"
+                },
+                {
+                  "entity": "input_number.bbq_battery_threshold",
+                  "name": "Battery threshold"
+                },
+                {
+                  "entity": "input_boolean.bbq_stall_alerts",
+                  "name": "Stall alerts"
+                },
+                {
+                  "entity": "input_number.bbq_snooze_minutes",
+                  "name": "Snooze duration"
+                },
+                {
+                  "entity": "input_text.bbq_notify_service",
+                  "name": "Notify service"
+                },
+                {
+                  "entity": "input_boolean.bbq_tts_alerts",
+                  "name": "Spoken announcements"
+                },
+                {
+                  "entity": "input_select.bbq_tts_speaker",
+                  "name": "Speaker"
+                },
+                {
+                  "entity": "input_select.bbq_tts_engine",
+                  "name": "Voice engine / Alexa native"
+                },
+                {
+                  "entity": "input_boolean.bbq_tv_alerts",
+                  "name": "TV text notifications"
+                },
+                {
+                  "entity": "input_text.bbq_tv_entity",
+                  "name": "TV media player entity"
+                },
+                {
+                  "entity": "input_text.bbq_tv_notify_service",
+                  "name": "TV notify service (without notify.)"
+                }
+              ]
+            },
+            {
+              "type": "horizontal-stack",
+              "cards": [
+                {
+                  "type": "button",
+                  "name": "Test notification",
+                  "icon": "mdi:bell-check-outline",
+                  "tap_action": {
+                    "action": "perform-action",
+                    "perform_action": "script.bbq_notify",
+                    "data": {
+                      "title": "BBQ test",
+                      "message": "Test notification from the BBQ dashboard.",
+                      "tag": "inkbird_test",
+                      "tts_message": "This is a test announcement from your barbecue dashboard."
+                    }
+                  }
+                },
+                {
+                  "type": "button",
+                  "name": "Refresh devices",
+                  "icon": "mdi:refresh",
+                  "tap_action": {
+                    "action": "perform-action",
+                    "perform_action": "script.bbq_refresh_media_targets"
+                  }
+                }
+              ]
+            }
+          ]
+        },
+        {
+          "type": "grid",
+          "cards": [
+            {
+              "type": "conditional",
+              "conditions": [
+                {
+                  "condition": "state",
+                  "entity": "input_boolean.bbq_show_help",
+                  "state": "on"
+                }
+              ],
+              "card": {
+                "type": "vertical-stack",
+                "cards": [
+                  {
+                    "type": "heading",
+                    "heading": "Advanced diagnostics",
+                    "heading_style": "title",
+                    "icon": "mdi:stethoscope"
+                  },
+                  {
+                    "type": "entities",
+                    "title": null,
+                    "show_header_toggle": false,
+                    "entities": [
+                      {
+                        "entity": "__INKBIRD_UPDATE__",
+                        "name": "Integration update"
+                      },
+                      {
+                        "entity": "sensor.__INKBIRD_DEVICE___configured_model_profile",
+                        "name": "Model profile"
+                      },
+                      {
+                        "entity": "sensor.__INKBIRD_DEVICE___expected_temperature_channel_count",
+                        "name": "Expected channels"
+                      },
+                      {
+                        "entity": "sensor.__INKBIRD_DEVICE___probe_layout",
+                        "name": "Probe layout"
+                      },
+                      {
+                        "entity": "sensor.__INKBIRD_DEVICE___last_parsed_transport",
+                        "name": "Last parsed transport"
+                      },
+                      {
+                        "entity": "sensor.__INKBIRD_DEVICE___local_lan_last_error",
+                        "name": "LAN error"
+                      },
+                      {
+                        "entity": "sensor.__INKBIRD_DEVICE___last_ble_error",
+                        "name": "BLE error"
+                      },
+                      {
+                        "entity": "sensor.__INKBIRD_AREA_PREFIX___ble_diagnostic_status",
+                        "name": "Last BLE diagnostic"
+                      }
+                    ]
+                  },
+                  {
+                    "type": "button",
+                    "entity": "button.__INKBIRD_AREA_PREFIX___capture_ble_diagnostics",
+                    "name": "Run BLE diagnostic",
+                    "icon": "mdi:play-circle-outline"
+                  }
+                ]
+              }
+            }
+          ]
+        },
+        {
+          "type": "grid",
+          "cards": [
+            {
+              "type": "heading",
+              "heading": "Setup and credits",
+              "heading_style": "title",
+              "icon": "mdi:wrench-outline"
+            },
+            {
+              "type": "entities",
+              "title": null,
+              "show_header_toggle": false,
+              "entities": [
+                {
+                  "entity": "input_text.inkbird_sensor_prefix",
+                  "name": "Sensor prefix"
+                }
+              ]
+            },
+            {
+              "type": "markdown",
+              "content": "- Device communication, protocol implementation and probe sensors: [zampix1/ha-inkbird-int14](https://github.com/zampix1/ha-inkbird-int14)\n- Cook Control dashboard design reference (not the device integration used here): [boris327/ha-inkbird-int14bw](https://github.com/boris327/ha-inkbird-int14bw)\n- Dashboard: [remb0/inkbird-dashboard](https://github.com/remb0/inkbird-dashboard)\n- Multi-sensor probe layout adapted from the [INT-12E-BW community dashboard](https://github.com/zampix1/ha-inkbird-int14/blob/main/docs/int12e_dashboard.md)\n"
+            }
+          ]
+        }
+      ]
+    }
+  ]
+};
+
+const AREA_TOKEN = "__INKBIRD_AREA_PREFIX__";
+const DEVICE_TOKEN = "__INKBIRD_DEVICE__";
+const UPDATE_TOKEN = "__INKBIRD_UPDATE__";
+
+const FALLBACK_AREA = "inkbird_example";
+const FALLBACK_DEVICE = "inkbird_int_14";
+const FALLBACK_UPDATE = "update.inkbird_int_update";
+
+// The integration prefixes most entity ids with the area the device sits in,
+// so the ids differ per install. Find them by shape instead of guessing.
+function discover(hass) {
+  const ids = Object.keys(hass && hass.states ? hass.states : {});
+
+  let area = null;
+  for (const id of ids) {
+    const m = id.match(/^(sensor\.[a-z0-9_]+)_probe_1_(?:internal|food_[14])_temperature$/);
+    if (m && m[1].includes("inkbird")) {
+      area = m[1];
+      break;
+    }
+  }
+
+  let device = null;
+  for (const id of ids) {
+    const m = id.match(/^binary_sensor\.([a-z0-9_]+)_ble_connected$/);
+    if (m && m[1].includes("inkbird")) {
+      device = m[1];
+      break;
+    }
+  }
+
+  const update = ids.find((id) => id.startsWith("update.") && id.includes("inkbird")) || null;
+
+  return { area, device, update };
+}
+
+function state(hass, entityId) {
+  const value = hass && hass.states ? hass.states[entityId] : null;
+  return value ? value.state : null;
+}
+
+function chooseModel(config, hass, found) {
+  const explicit = String(config.model || "auto").toLowerCase().replace(/-/g, "_");
+  if (explicit === "int14_bw" || explicit === "int14s_bw") return explicit;
+
+  const helper = state(hass, "input_select.inkbird_dashboard_model");
+  if (helper === "INT-14-BW") return "int14_bw";
+  if (helper === "INT-14S-BW") return "int14s_bw";
+
+  const device = found.device || FALLBACK_DEVICE;
+  const profile = state(hass, "sensor." + device + "_configured_model_profile");
+  if (profile === "int14_bw" || profile === "int14s_bw") return profile;
+  const model = state(hass, "sensor." + device + "_configured_model") || "";
+  if (/14S-BW/i.test(model)) return "int14s_bw";
+  if (/14-BW/i.test(model)) return "int14_bw";
+
+  const ids = Object.keys(hass && hass.states ? hass.states : {});
+  if (ids.some((id) => /_probe_1_internal_temperature$/.test(id))) return "int14_bw";
+  if (ids.some((id) => /_probe_1_food_4_temperature$/.test(id))) return "int14s_bw";
+  return "int14s_bw";
+}
+
+function integrationEntity(entityId) {
+  return typeof entityId === "string"
+    && /^(sensor|binary_sensor|select|button|number|switch|update)\./.test(entityId)
+    && entityId.includes("inkbird")
+    && !entityId.startsWith("sensor.bbq_");
+}
+
+// The source dashboard contains both channel layouts. At runtime, unwrap the
+// selected profile and omit only missing integration entities. Package helpers
+// remain visible so a missing package is diagnosed instead of silently hidden.
+function adapt(node, model, hass) {
+  if (Array.isArray(node)) {
+    return node.map((item) => adapt(item, model, hass)).filter((item) => item !== null);
+  }
+  if (!node || typeof node !== "object") return node;
+
+  if (node.inkbird_model) {
+    if (node.inkbird_model === "auto" || node.inkbird_model !== model) return null;
+    return adapt(node.card, model, hass);
+  }
+
+  // Replaced by the compact model/status/battery header.
+  if (node.type === "custom:button-card" && node.custom_fields && node.custom_fields.dev && node.custom_fields.batt) {
+    return null;
+  }
+  if (integrationEntity(node.entity) && !hass.states[node.entity]) return null;
+
+  const out = {};
+  for (const [key, value] of Object.entries(node)) {
+    if (key === "inkbird_model") continue;
+    if (key === "entities" && Array.isArray(value)) {
+      out[key] = value
+        .filter((row) => {
+          const entityId = typeof row === "string" ? row : row && row.entity;
+          return !integrationEntity(entityId) || Boolean(hass.states[entityId]);
+        })
+        .map((row) => adapt(row, model, hass))
+        .filter((row) => row !== null);
+    } else {
+      out[key] = adapt(value, model, hass);
+    }
+  }
+
+  if ((out.type === "entities" || out.type === "history-graph") && Array.isArray(out.entities) && out.entities.length === 0) {
+    return null;
+  }
+  if ((out.type === "grid" || out.type === "vertical-stack" || out.type === "horizontal-stack") && Array.isArray(out.cards)) {
+    out.cards = out.cards.filter(Boolean);
+    if (out.cards.length === 0) return null;
+  }
+  return out;
+}
+
+function addWritableSoundControl(config, hass) {
+  const soundSwitch = Object.keys(hass.states || {}).find(
+    (id) => id.startsWith("switch.") && id.includes("inkbird") && /(?:sound|mute)/.test(id)
+  );
+  if (!soundSwitch) return config;
+  const settings = (config.views || []).find((view) => view.path === "settings");
+  if (!settings) return config;
+  for (const section of settings.sections || []) {
+    const heading = (section.cards || []).find((card) => card && card.type === "heading");
+    if (!heading || heading.heading !== "Device controls") continue;
+    const entities = (section.cards || []).find((card) => card && card.type === "entities");
+    if (entities && !entities.entities.some((row) => (row.entity || row) === soundSwitch)) {
+      entities.entities.splice(1, 0, { entity: soundSwitch, name: "Station sound" });
+    }
+  }
+  return config;
+}
+
+// Walk the config and swap the tokens for the resolved ids. Strings only —
+// the tokens never appear in a key.
+function substitute(node, map) {
+  if (typeof node === "string") {
+    let out = node;
+    for (const [token, value] of map) {
+      if (out.includes(token)) out = out.split(token).join(value);
+    }
+    return out;
+  }
+  if (Array.isArray(node)) return node.map((n) => substitute(n, map));
+  if (node && typeof node === "object") {
+    const out = {};
+    for (const k of Object.keys(node)) out[k] = substitute(node[k], map);
+    return out;
+  }
+  return node;
+}
+
+class InkbirdBbqDashboardStrategy extends HTMLElement {
+  static async generate(config, hass) {
+    const found = discover(hass);
+    const model = chooseModel(config, hass, found);
+
+    const area = (config.prefix || found.area || "sensor." + FALLBACK_AREA).replace(/^sensor\./, "");
+    const device = config.device || found.device || FALLBACK_DEVICE;
+    const update = config.update_entity || found.update || FALLBACK_UPDATE;
+
+    if (!found.area && !config.prefix) {
+      // eslint-disable-next-line no-console
+      console.warn(
+        "[inkbird-bbq] No Inkbird probe sensor found; falling back to " +
+          FALLBACK_AREA +
+          ". Set `prefix:` under the strategy if your ids differ."
+      );
+    }
+
+    const resolved = substitute(TEMPLATE, [
+      [AREA_TOKEN, area],
+      [DEVICE_TOKEN, device],
+      [UPDATE_TOKEN, update],
+    ]);
+    const adapted = adapt(resolved, model, hass);
+    adapted.inkbird_model = model;
+    return addWritableSoundControl(adapted, hass);
+  }
+}
+
+customElements.define("ll-strategy-dashboard-inkbird-int-cook-base", InkbirdBbqDashboardStrategy);
+
+// eslint-disable-next-line no-console
+console.info("%c INKBIRD-BBQ-STRATEGY %c 1.4.3 ",
+  "color:#f5ede4;background:#ff6a2c;font-weight:700",
+  "color:#ff6a2c;background:#211b16");

@@ -1,0 +1,1129 @@
+# Optional INT-14-BW Cook Control package. See ../README.md.
+input_text:
+  inkbird_sensor_prefix:
+    name: Inkbird sensor prefix
+    icon: mdi:identifier
+    max: 120
+    pattern: sensor\.[a-z0-9_]+
+  inkbird_name_1:
+    name: Probe 1 name
+    max: 100
+  inkbird_name_2:
+    name: Probe 2 name
+    max: 100
+  inkbird_name_3:
+    name: Probe 3 name
+    max: 100
+  inkbird_name_4:
+    name: Probe 4 name
+    max: 100
+  bbq_custom_name:
+    name: BBQ custom recipe name
+    icon: mdi:pencil
+    max: 100
+  bbq_notify_service:
+    name: BBQ notify service
+    icon: mdi:cellphone-message
+    max: 100
+    pattern: '[a-z0-9_]*'
+  bbq_tv_notify_service:
+    name: BBQ TV notify service
+    icon: mdi:television
+    max: 100
+    pattern: '[a-z0-9_]*'
+  bbq_tv_entity:
+    name: BBQ TV media player
+    icon: mdi:television
+    max: 100
+  bbq_last_alert_1:
+    name: Probe 1 last alert session
+    max: 255
+  bbq_last_alert_2:
+    name: Probe 2 last alert session
+    max: 255
+  bbq_last_alert_3:
+    name: Probe 3 last alert session
+    max: 255
+  bbq_last_alert_4:
+    name: Probe 4 last alert session
+    max: 255
+input_number:
+  inkbird_target_1:
+    name: Probe 1 target
+    icon: mdi:thermometer-alert
+    min: 0
+    max: 300
+    step: 1
+    unit_of_measurement: °C
+    mode: slider
+  inkbird_target_2:
+    name: Probe 2 target
+    icon: mdi:thermometer-alert
+    min: 0
+    max: 300
+    step: 1
+    unit_of_measurement: °C
+    mode: slider
+  inkbird_target_3:
+    name: Probe 3 target
+    icon: mdi:thermometer-alert
+    min: 0
+    max: 300
+    step: 1
+    unit_of_measurement: °C
+    mode: slider
+  inkbird_target_4:
+    name: Probe 4 target
+    icon: mdi:thermometer-alert
+    min: 0
+    max: 300
+    step: 1
+    unit_of_measurement: °C
+    mode: slider
+  bbq_battery_threshold:
+    name: BBQ battery alert threshold
+    icon: mdi:battery-alert-variant-outline
+    min: 5
+    max: 50
+    step: 1
+    unit_of_measurement: '%'
+    mode: slider
+  bbq_custom_target:
+    name: BBQ custom recipe target
+    icon: mdi:thermometer-alert
+    min: 0
+    max: 300
+    step: 1
+    unit_of_measurement: °C
+    mode: slider
+  bbq_rest_minutes:
+    name: BBQ rest reminder
+    icon: mdi:timer-sand
+    min: 0
+    max: 120
+    step: 5
+    unit_of_measurement: min
+    mode: slider
+  bbq_snooze_minutes:
+    name: BBQ snooze duration
+    icon: mdi:alarm-snooze
+    min: 5
+    max: 60
+    step: 5
+    unit_of_measurement: min
+    mode: slider
+  bbq_graph_max:
+    name: BBQ graph top temperature
+    icon: mdi:chart-line-variant
+    min: 100
+    max: 300
+    step: 10
+    unit_of_measurement: °C
+    mode: slider
+input_boolean:
+  bbq_battery_alerts:
+    name: BBQ battery alerts
+    icon: mdi:battery-alert
+  bbq_stall_alerts:
+    name: BBQ stall alerts
+    icon: mdi:trending-neutral
+  bbq_tts_alerts:
+    name: BBQ spoken announcements
+    icon: mdi:bullhorn
+  bbq_tv_alerts:
+    name: BBQ TV text notifications
+    icon: mdi:television
+  bbq_show_help:
+    name: BBQ show help
+    icon: mdi:help-circle-outline
+  bbq_custom_open:
+    name: BBQ custom recipe open
+    icon: mdi:tune-variant
+  bbq_probe_1_enabled:
+    name: Probe 1 alerts
+    icon: mdi:bell-outline
+  bbq_probe_2_enabled:
+    name: Probe 2 alerts
+    icon: mdi:bell-outline
+  bbq_probe_3_enabled:
+    name: Probe 3 alerts
+    icon: mdi:bell-outline
+  bbq_probe_4_enabled:
+    name: Probe 4 alerts
+    icon: mdi:bell-outline
+input_select:
+  inkbird_dashboard_model:
+    name: Inkbird dashboard model
+    icon: mdi:devices
+    options:
+    - INT-14-BW
+  inkbird_active_probe:
+    name: Active probe
+    icon: mdi:target
+    options:
+    - '1'
+    - '2'
+    - '3'
+    - '4'
+  inkbird_unit:
+    name: Temperature unit
+    icon: mdi:thermometer
+    options:
+    - °C
+    - °F
+  bbq_accent:
+    name: BBQ accent colour
+    icon: mdi:palette
+    options:
+    - Ember
+    - Blue
+    - Green
+    - Purple
+    - Red
+    - Teal
+  bbq_tts_speaker:
+    name: BBQ TTS speaker
+    icon: mdi:speaker
+    options:
+    - none
+  bbq_tts_engine:
+    name: BBQ TTS engine
+    icon: mdi:text-to-speech
+    options:
+    - none
+    - Alexa (native)
+  bbq_style:
+    name: BBQ dashboard style
+    icon: mdi:palette-outline
+    options:
+    - Default
+    - Transparent
+  bbq_notify_target:
+    name: BBQ notification target
+    icon: mdi:bell-ring
+    options:
+    - persistent_notification
+  bbq_language:
+    name: Cook Control language
+    options:
+    - English
+    - Italiano
+    icon: mdi:translate
+sensor:
+- platform: derivative
+  name: BBQ Probe 1 Rate
+  unique_id: bbq_probe_1_rate
+  source: sensor.bbq_probe_1_control_temperature
+  unit_time: h
+  time_window: 00:10:00
+  max_sub_interval: 00:02:00
+  round: 1
+- platform: derivative
+  name: BBQ Probe 2 Rate
+  unique_id: bbq_probe_2_rate
+  source: sensor.bbq_probe_2_control_temperature
+  unit_time: h
+  time_window: 00:10:00
+  max_sub_interval: 00:02:00
+  round: 1
+- platform: derivative
+  name: BBQ Probe 3 Rate
+  unique_id: bbq_probe_3_rate
+  source: sensor.bbq_probe_3_control_temperature
+  unit_time: h
+  time_window: 00:10:00
+  max_sub_interval: 00:02:00
+  round: 1
+- platform: derivative
+  name: BBQ Probe 4 Rate
+  unique_id: bbq_probe_4_rate
+  source: sensor.bbq_probe_4_control_temperature
+  unit_time: h
+  time_window: 00:10:00
+  max_sub_interval: 00:02:00
+  round: 1
+template:
+- sensor:
+  - name: BBQ Probe 1 Control Temperature
+    unique_id: bbq_probe_1_control_temperature
+    device_class: temperature
+    unit_of_measurement: °C
+    availability: |-
+      {% set p = states('input_text.inkbird_sensor_prefix') %}
+      {% set e = p ~ '_probe_1_internal_temperature' %}
+      {{ p | regex_match('^sensor[.][a-z0-9_]+$') and is_number(states(e)) }}
+    state: |-
+      {% set p = states('input_text.inkbird_sensor_prefix') %}
+      {% set e = p ~ '_probe_1_internal_temperature' %}
+      {% set v = states(e) | float(none) %}
+      {{ (v - 32) * 5 / 9 if v is not none and state_attr(e, 'unit_of_measurement') == '°F' else v }}
+  - name: BBQ Probe 2 Control Temperature
+    unique_id: bbq_probe_2_control_temperature
+    device_class: temperature
+    unit_of_measurement: °C
+    availability: |-
+      {% set p = states('input_text.inkbird_sensor_prefix') %}
+      {% set e = p ~ '_probe_2_internal_temperature' %}
+      {{ p | regex_match('^sensor[.][a-z0-9_]+$') and is_number(states(e)) }}
+    state: |-
+      {% set p = states('input_text.inkbird_sensor_prefix') %}
+      {% set e = p ~ '_probe_2_internal_temperature' %}
+      {% set v = states(e) | float(none) %}
+      {{ (v - 32) * 5 / 9 if v is not none and state_attr(e, 'unit_of_measurement') == '°F' else v }}
+  - name: BBQ Probe 3 Control Temperature
+    unique_id: bbq_probe_3_control_temperature
+    device_class: temperature
+    unit_of_measurement: °C
+    availability: |-
+      {% set p = states('input_text.inkbird_sensor_prefix') %}
+      {% set e = p ~ '_probe_3_internal_temperature' %}
+      {{ p | regex_match('^sensor[.][a-z0-9_]+$') and is_number(states(e)) }}
+    state: |-
+      {% set p = states('input_text.inkbird_sensor_prefix') %}
+      {% set e = p ~ '_probe_3_internal_temperature' %}
+      {% set v = states(e) | float(none) %}
+      {{ (v - 32) * 5 / 9 if v is not none and state_attr(e, 'unit_of_measurement') == '°F' else v }}
+  - name: BBQ Probe 4 Control Temperature
+    unique_id: bbq_probe_4_control_temperature
+    device_class: temperature
+    unit_of_measurement: °C
+    availability: |-
+      {% set p = states('input_text.inkbird_sensor_prefix') %}
+      {% set e = p ~ '_probe_4_internal_temperature' %}
+      {{ p | regex_match('^sensor[.][a-z0-9_]+$') and is_number(states(e)) }}
+    state: |-
+      {% set p = states('input_text.inkbird_sensor_prefix') %}
+      {% set e = p ~ '_probe_4_internal_temperature' %}
+      {% set v = states(e) | float(none) %}
+      {{ (v - 32) * 5 / 9 if v is not none and state_attr(e, 'unit_of_measurement') == '°F' else v }}
+  - name: BBQ Alert Count
+    unique_id: bbq_alert_count
+    state: |
+      {{ ['1', '2', '3', '4']
+         | map('regex_replace', '^(.*)$', 'sensor.bbq_probe_\\1_status')
+         | map('states')
+         | select('in', ['close', 'ready'])
+         | list | count }}
+  - name: BBQ Probe 1 Status
+    unique_id: bbq_probe_1_status
+    state: |-
+      {% set p = states('input_text.inkbird_sensor_prefix') %}
+      {% set newest = [states(p ~ '_last_ble_update_epoch') | float(0), states(p ~ '_last_lan_update_epoch') | float(0)] | max %}
+      {% set age = as_timestamp(now()) - newest %}
+      {% set t = states('sensor.bbq_probe_1_control_temperature') | float(none) %}
+      {% set g = states('input_number.inkbird_target_1') | float(none) %}
+      {% if not is_state('input_boolean.bbq_probe_1_enabled', 'on') %}idle
+      {% elif newest <= 0 or age < -60 or age > 120 or t is none or g is none or g <= 0 %}idle
+      {% elif t >= g %}ready
+      {% elif t >= g - 5 %}close
+      {% else %}heating{% endif %}
+  - name: BBQ Probe 2 Status
+    unique_id: bbq_probe_2_status
+    state: |-
+      {% set p = states('input_text.inkbird_sensor_prefix') %}
+      {% set newest = [states(p ~ '_last_ble_update_epoch') | float(0), states(p ~ '_last_lan_update_epoch') | float(0)] | max %}
+      {% set age = as_timestamp(now()) - newest %}
+      {% set t = states('sensor.bbq_probe_2_control_temperature') | float(none) %}
+      {% set g = states('input_number.inkbird_target_2') | float(none) %}
+      {% if not is_state('input_boolean.bbq_probe_2_enabled', 'on') %}idle
+      {% elif newest <= 0 or age < -60 or age > 120 or t is none or g is none or g <= 0 %}idle
+      {% elif t >= g %}ready
+      {% elif t >= g - 5 %}close
+      {% else %}heating{% endif %}
+  - name: BBQ Probe 3 Status
+    unique_id: bbq_probe_3_status
+    state: |-
+      {% set p = states('input_text.inkbird_sensor_prefix') %}
+      {% set newest = [states(p ~ '_last_ble_update_epoch') | float(0), states(p ~ '_last_lan_update_epoch') | float(0)] | max %}
+      {% set age = as_timestamp(now()) - newest %}
+      {% set t = states('sensor.bbq_probe_3_control_temperature') | float(none) %}
+      {% set g = states('input_number.inkbird_target_3') | float(none) %}
+      {% if not is_state('input_boolean.bbq_probe_3_enabled', 'on') %}idle
+      {% elif newest <= 0 or age < -60 or age > 120 or t is none or g is none or g <= 0 %}idle
+      {% elif t >= g %}ready
+      {% elif t >= g - 5 %}close
+      {% else %}heating{% endif %}
+  - name: BBQ Probe 4 Status
+    unique_id: bbq_probe_4_status
+    state: |-
+      {% set p = states('input_text.inkbird_sensor_prefix') %}
+      {% set newest = [states(p ~ '_last_ble_update_epoch') | float(0), states(p ~ '_last_lan_update_epoch') | float(0)] | max %}
+      {% set age = as_timestamp(now()) - newest %}
+      {% set t = states('sensor.bbq_probe_4_control_temperature') | float(none) %}
+      {% set g = states('input_number.inkbird_target_4') | float(none) %}
+      {% if not is_state('input_boolean.bbq_probe_4_enabled', 'on') %}idle
+      {% elif newest <= 0 or age < -60 or age > 120 or t is none or g is none or g <= 0 %}idle
+      {% elif t >= g %}ready
+      {% elif t >= g - 5 %}close
+      {% else %}heating{% endif %}
+script:
+  inkbird_apply_recipe:
+    alias: Inkbird — apply recipe to active probe
+    icon: mdi:silverware-fork-knife
+    mode: parallel
+    max: 10
+    fields:
+      label:
+        name: Label
+        description: Display name written to the probe (e.g. "Beef Brisket").
+        required: true
+        selector:
+          text: null
+      target:
+        name: Target
+        description: Target temperature in °C.
+        required: true
+        selector:
+          number:
+            min: 0
+            max: 300
+            unit_of_measurement: °C
+    sequence:
+    - variables:
+        probe: '{{ states(''input_select.inkbird_active_probe'') }}'
+    - action: input_number.set_value
+      target:
+        entity_id: input_number.inkbird_target_{{ probe }}
+      data:
+        value: '{{ target | float }}'
+    - action: input_text.set_value
+      target:
+        entity_id: input_text.inkbird_name_{{ probe }}
+      data:
+        value: '{{ label }}'
+  inkbird_apply_custom_recipe:
+    alias: Inkbird — apply the custom recipe
+    icon: mdi:tune-variant
+    mode: single
+    sequence:
+    - variables:
+        label: |
+          {% set n = states('input_text.bbq_custom_name') %} {{ n if n not in ['unknown', 'unavailable', ''] else 'Custom' }}
+    - action: script.inkbird_apply_recipe
+      data:
+        label: '{{ label }}'
+        target: '{{ states(''input_number.bbq_custom_target'') | float(60) }}'
+    - action: input_boolean.turn_off
+      target:
+        entity_id: input_boolean.bbq_custom_open
+  bbq_refresh_media_targets:
+    alias: BBQ — refresh TTS device lists
+    icon: mdi:refresh
+    mode: single
+    sequence:
+    - action: input_select.set_options
+      target:
+        entity_id: input_select.bbq_tts_speaker
+      data:
+        options: |
+          {% set selected = states('input_select.bbq_tts_speaker') %} {% set available = states.media_player
+             | rejectattr('state', 'in', ['unknown', 'unavailable'])
+             | map(attribute='entity_id') | list %}
+          {% set retained = [selected] if selected is match('^media_player[.][a-z0-9_]+$') else [] %} {{ ['none'] + ((available + retained) | unique | sort) }}
+    - action: input_select.set_options
+      target:
+        entity_id: input_select.bbq_tts_engine
+      data:
+        options: |
+          {% set selected = states('input_select.bbq_tts_engine') %} {% set native = ['Alexa (native)'] if integration_entities('alexa_media') | count > 0 or selected == 'Alexa (native)' else [] %} {% set available = states.tts | rejectattr('state', 'in', ['unknown', 'unavailable'])
+             | map(attribute='entity_id') | list %}
+          {% set retained = [selected] if selected is match('^tts[.][a-z0-9_]+$') else [] %} {{ ['none'] + native + ((available + retained) | unique | sort) }}
+  bbq_notify:
+    alias: BBQ send a notification
+    icon: mdi:bell-ring-outline
+    mode: parallel
+    max: 25
+    fields:
+      title:
+        name: Title
+        required: true
+        selector:
+          text: null
+      message:
+        name: Message
+        required: true
+        selector:
+          text: null
+      tag:
+        name: Tag
+        description: |
+          Notification id. Re-using a tag replaces the previous notification instead of stacking another one up.
+        required: true
+        selector:
+          text: null
+      actions:
+        name: Actions
+        description: Optional mobile_app action buttons.
+        required: false
+        selector:
+          object: null
+      tts_message:
+        name: Spoken message
+        description: |
+          What the speaker says. Falls back to `message`. Worth setting separately — emoji and "°C" do not read well out loud.
+        required: false
+        selector:
+          text: null
+    sequence:
+    - action: persistent_notification.create
+      data:
+        title: '{{ title }}'
+        message: '{{ message }}'
+        notification_id: '{{ tag }}'
+    - variables:
+        notify_target: |
+          {% set configured = states('input_text.bbq_notify_service') %} {{ configured if configured not in ['unknown', 'unavailable', '']
+             else states('input_select.bbq_notify_target') }}
+    - if:
+      - condition: template
+        value_template: |
+          {{ notify_target not in ['persistent_notification', 'unknown', 'unavailable', '']
+             and notify_target | regex_match('^[a-z0-9_]+$') }}
+      then:
+      - choose:
+        - conditions: '{{ notify_target.startswith(''mobile_app_'') }}'
+          sequence:
+          - action: '{{ ''notify.'' ~ notify_target }}'
+            continue_on_error: true
+            data:
+              title: '{{ title }}'
+              message: '{{ message }}'
+              data:
+                tag: '{{ tag }}'
+                actions: '{{ actions | default([], true) }}'
+        default:
+        - action: '{{ ''notify.'' ~ notify_target }}'
+          continue_on_error: true
+          data:
+            title: '{{ title }}'
+            message: '{{ message }}'
+    - if:
+      - condition: state
+        entity_id: input_boolean.bbq_tv_alerts
+        state: 'on'
+      then:
+      - variables:
+          tv_service: '{{ states(''input_text.bbq_tv_notify_service'') }}'
+          tv_entity: '{{ states(''input_text.bbq_tv_entity'') }}'
+      - choose:
+        - conditions: |
+            {{ tv_service | regex_match('^[a-z0-9_]+$')
+               and tv_entity | regex_match('^media_player\\.[a-z0-9_]+$')
+               and has_value(tv_entity) }}
+          sequence:
+          - if: '{{ not is_state(tv_entity, ''off'') }}'
+            then:
+            - action: '{{ ''notify.'' ~ tv_service }}'
+              continue_on_error: true
+              data:
+                message: '{{ title }}: {{ message }}'
+        default:
+        - action: persistent_notification.create
+          data:
+            notification_id: inkbird_tv_configuration
+            title: BBQ TV notification unavailable
+            message: Check the TV notify service and media player in the dashboard settings.
+    - if:
+      - condition: state
+        entity_id: input_boolean.bbq_tts_alerts
+        state: 'on'
+      then:
+      - variables:
+          speaker: '{{ states(''input_select.bbq_tts_speaker'') }}'
+          engine: '{{ states(''input_select.bbq_tts_engine'') }}'
+          alexa_speaker: '{{ states(''input_select.bbq_tts_speaker'') in integration_entities(''alexa_media'') }}'
+      - choose:
+        - conditions: '{{ engine == ''none'' or speaker == ''none'' }}'
+          sequence:
+          - stop: Speech disabled by the device selector.
+        - conditions: |
+            {{ engine == 'Alexa (native)' and alexa_speaker
+               and has_value(speaker) }}
+          sequence:
+          - action: notify.alexa_media
+            data:
+              target: '{{ [speaker] }}'
+              title: '{{ title }}'
+              message: '{{ tts_message | default(message, true) }}'
+              data:
+                type: announce
+                method: speak
+        - conditions: |
+            {{ engine.startswith('tts.') and has_value(engine)
+               and has_value(speaker) and not alexa_speaker
+               and not is_state(speaker, 'off')
+               and (state_attr(speaker, 'supported_features') | int(0) | bitwise_and(512)) != 0 }}
+          sequence:
+          - action: tts.speak
+            target:
+              entity_id: '{{ engine }}'
+            data:
+              media_player_entity_id: '{{ speaker }}'
+              cache: true
+              message: '{{ tts_message | default(message, true) }}'
+        default:
+        - action: persistent_notification.create
+          data:
+            notification_id: inkbird_audio_configuration
+            title: BBQ announcement not sent
+            message: |
+              The selected speaker or voice engine is unavailable or incompatible. For an Alexa Media Player speaker, choose Alexa (native). Other players need an available TTS engine and audio playback support.
+        - stop: Invalid BBQ speech configuration.
+          error: true
+  bbq_snooze_1:
+    alias: BBQ probe 1 snooze
+    mode: restart
+    sequence:
+    - variables:
+        session_at_start: '{{ [as_timestamp(states.input_boolean.bbq_probe_1_enabled.last_changed), as_timestamp(states.input_text.inkbird_name_1.last_changed),
+          as_timestamp(states.input_number.inkbird_target_1.last_changed), as_timestamp(states.input_text.inkbird_sensor_prefix.last_changed)]
+          | join('':'') }}'
+        minutes: '{{ states(''input_number.bbq_snooze_minutes'') | int(0) }}'
+    - condition: template
+      value_template: '{{ minutes > 0 }}'
+    - delay:
+        minutes: '{{ minutes }}'
+    - variables:
+        current_session: '{{ [as_timestamp(states.input_boolean.bbq_probe_1_enabled.last_changed), as_timestamp(states.input_text.inkbird_name_1.last_changed),
+          as_timestamp(states.input_number.inkbird_target_1.last_changed), as_timestamp(states.input_text.inkbird_sensor_prefix.last_changed)]
+          | join('':'') }}'
+    - condition: template
+      value_template: '{{ current_session == session_at_start and is_state(''sensor.bbq_probe_1_status'', ''ready'')
+        and is_state(''input_boolean.bbq_probe_1_enabled'', ''on'') }}'
+    - variables:
+        pname: '{{ states(''input_text.inkbird_name_1'') }}'
+        ptemp: '{{ states(''sensor.bbq_probe_1_control_temperature'') | float(0) | round(1) }}'
+        italian: '{{ is_state(''input_select.bbq_language'', ''Italiano'') }}'
+    - action: script.bbq_notify
+      data:
+        title: '{{ ''BBQ: promemoria'' if italian else ''BBQ: reminder'' }}'
+        message: '{{ pname }}: {{ ''soglia ancora raggiunta'' if italian else ''still at the HA target'' }}. {{
+          ptemp }} {{ ''gradi'' if italian else ''degrees'' }}.'
+        tag: inkbird_ready_1
+  bbq_rest_1:
+    alias: BBQ probe 1 rest
+    mode: restart
+    sequence:
+    - variables:
+        session_at_start: '{{ [as_timestamp(states.input_boolean.bbq_probe_1_enabled.last_changed), as_timestamp(states.input_text.inkbird_name_1.last_changed),
+          as_timestamp(states.input_number.inkbird_target_1.last_changed), as_timestamp(states.input_text.inkbird_sensor_prefix.last_changed)]
+          | join('':'') }}'
+        minutes: '{{ states(''input_number.bbq_rest_minutes'') | int(0) }}'
+    - condition: template
+      value_template: '{{ minutes > 0 }}'
+    - delay:
+        minutes: '{{ minutes }}'
+    - variables:
+        current_session: '{{ [as_timestamp(states.input_boolean.bbq_probe_1_enabled.last_changed), as_timestamp(states.input_text.inkbird_name_1.last_changed),
+          as_timestamp(states.input_number.inkbird_target_1.last_changed), as_timestamp(states.input_text.inkbird_sensor_prefix.last_changed)]
+          | join('':'') }}'
+    - condition: template
+      value_template: '{{ current_session == session_at_start and is_state(''sensor.bbq_probe_1_status'', ''ready'')
+        and is_state(''input_boolean.bbq_probe_1_enabled'', ''on'') }}'
+    - variables:
+        pname: '{{ states(''input_text.inkbird_name_1'') }}'
+        ptemp: '{{ states(''sensor.bbq_probe_1_control_temperature'') | float(0) | round(1) }}'
+        italian: '{{ is_state(''input_select.bbq_language'', ''Italiano'') }}'
+    - action: script.bbq_notify
+      data:
+        title: '{{ ''BBQ: promemoria'' if italian else ''BBQ: reminder'' }}'
+        message: '{{ pname }}: {{ minutes }} {{ ''minuti dalla soglia HA. Verifica la cottura.'' if italian else
+          ''minutes since reaching the HA target. Check the cook.'' }}'
+        tag: inkbird_rest_1
+  bbq_snooze_2:
+    alias: BBQ probe 2 snooze
+    mode: restart
+    sequence:
+    - variables:
+        session_at_start: '{{ [as_timestamp(states.input_boolean.bbq_probe_2_enabled.last_changed), as_timestamp(states.input_text.inkbird_name_2.last_changed),
+          as_timestamp(states.input_number.inkbird_target_2.last_changed), as_timestamp(states.input_text.inkbird_sensor_prefix.last_changed)]
+          | join('':'') }}'
+        minutes: '{{ states(''input_number.bbq_snooze_minutes'') | int(0) }}'
+    - condition: template
+      value_template: '{{ minutes > 0 }}'
+    - delay:
+        minutes: '{{ minutes }}'
+    - variables:
+        current_session: '{{ [as_timestamp(states.input_boolean.bbq_probe_2_enabled.last_changed), as_timestamp(states.input_text.inkbird_name_2.last_changed),
+          as_timestamp(states.input_number.inkbird_target_2.last_changed), as_timestamp(states.input_text.inkbird_sensor_prefix.last_changed)]
+          | join('':'') }}'
+    - condition: template
+      value_template: '{{ current_session == session_at_start and is_state(''sensor.bbq_probe_2_status'', ''ready'')
+        and is_state(''input_boolean.bbq_probe_2_enabled'', ''on'') }}'
+    - variables:
+        pname: '{{ states(''input_text.inkbird_name_2'') }}'
+        ptemp: '{{ states(''sensor.bbq_probe_2_control_temperature'') | float(0) | round(1) }}'
+        italian: '{{ is_state(''input_select.bbq_language'', ''Italiano'') }}'
+    - action: script.bbq_notify
+      data:
+        title: '{{ ''BBQ: promemoria'' if italian else ''BBQ: reminder'' }}'
+        message: '{{ pname }}: {{ ''soglia ancora raggiunta'' if italian else ''still at the HA target'' }}. {{
+          ptemp }} {{ ''gradi'' if italian else ''degrees'' }}.'
+        tag: inkbird_ready_2
+  bbq_rest_2:
+    alias: BBQ probe 2 rest
+    mode: restart
+    sequence:
+    - variables:
+        session_at_start: '{{ [as_timestamp(states.input_boolean.bbq_probe_2_enabled.last_changed), as_timestamp(states.input_text.inkbird_name_2.last_changed),
+          as_timestamp(states.input_number.inkbird_target_2.last_changed), as_timestamp(states.input_text.inkbird_sensor_prefix.last_changed)]
+          | join('':'') }}'
+        minutes: '{{ states(''input_number.bbq_rest_minutes'') | int(0) }}'
+    - condition: template
+      value_template: '{{ minutes > 0 }}'
+    - delay:
+        minutes: '{{ minutes }}'
+    - variables:
+        current_session: '{{ [as_timestamp(states.input_boolean.bbq_probe_2_enabled.last_changed), as_timestamp(states.input_text.inkbird_name_2.last_changed),
+          as_timestamp(states.input_number.inkbird_target_2.last_changed), as_timestamp(states.input_text.inkbird_sensor_prefix.last_changed)]
+          | join('':'') }}'
+    - condition: template
+      value_template: '{{ current_session == session_at_start and is_state(''sensor.bbq_probe_2_status'', ''ready'')
+        and is_state(''input_boolean.bbq_probe_2_enabled'', ''on'') }}'
+    - variables:
+        pname: '{{ states(''input_text.inkbird_name_2'') }}'
+        ptemp: '{{ states(''sensor.bbq_probe_2_control_temperature'') | float(0) | round(1) }}'
+        italian: '{{ is_state(''input_select.bbq_language'', ''Italiano'') }}'
+    - action: script.bbq_notify
+      data:
+        title: '{{ ''BBQ: promemoria'' if italian else ''BBQ: reminder'' }}'
+        message: '{{ pname }}: {{ minutes }} {{ ''minuti dalla soglia HA. Verifica la cottura.'' if italian else
+          ''minutes since reaching the HA target. Check the cook.'' }}'
+        tag: inkbird_rest_2
+  bbq_snooze_3:
+    alias: BBQ probe 3 snooze
+    mode: restart
+    sequence:
+    - variables:
+        session_at_start: '{{ [as_timestamp(states.input_boolean.bbq_probe_3_enabled.last_changed), as_timestamp(states.input_text.inkbird_name_3.last_changed),
+          as_timestamp(states.input_number.inkbird_target_3.last_changed), as_timestamp(states.input_text.inkbird_sensor_prefix.last_changed)]
+          | join('':'') }}'
+        minutes: '{{ states(''input_number.bbq_snooze_minutes'') | int(0) }}'
+    - condition: template
+      value_template: '{{ minutes > 0 }}'
+    - delay:
+        minutes: '{{ minutes }}'
+    - variables:
+        current_session: '{{ [as_timestamp(states.input_boolean.bbq_probe_3_enabled.last_changed), as_timestamp(states.input_text.inkbird_name_3.last_changed),
+          as_timestamp(states.input_number.inkbird_target_3.last_changed), as_timestamp(states.input_text.inkbird_sensor_prefix.last_changed)]
+          | join('':'') }}'
+    - condition: template
+      value_template: '{{ current_session == session_at_start and is_state(''sensor.bbq_probe_3_status'', ''ready'')
+        and is_state(''input_boolean.bbq_probe_3_enabled'', ''on'') }}'
+    - variables:
+        pname: '{{ states(''input_text.inkbird_name_3'') }}'
+        ptemp: '{{ states(''sensor.bbq_probe_3_control_temperature'') | float(0) | round(1) }}'
+        italian: '{{ is_state(''input_select.bbq_language'', ''Italiano'') }}'
+    - action: script.bbq_notify
+      data:
+        title: '{{ ''BBQ: promemoria'' if italian else ''BBQ: reminder'' }}'
+        message: '{{ pname }}: {{ ''soglia ancora raggiunta'' if italian else ''still at the HA target'' }}. {{
+          ptemp }} {{ ''gradi'' if italian else ''degrees'' }}.'
+        tag: inkbird_ready_3
+  bbq_rest_3:
+    alias: BBQ probe 3 rest
+    mode: restart
+    sequence:
+    - variables:
+        session_at_start: '{{ [as_timestamp(states.input_boolean.bbq_probe_3_enabled.last_changed), as_timestamp(states.input_text.inkbird_name_3.last_changed),
+          as_timestamp(states.input_number.inkbird_target_3.last_changed), as_timestamp(states.input_text.inkbird_sensor_prefix.last_changed)]
+          | join('':'') }}'
+        minutes: '{{ states(''input_number.bbq_rest_minutes'') | int(0) }}'
+    - condition: template
+      value_template: '{{ minutes > 0 }}'
+    - delay:
+        minutes: '{{ minutes }}'
+    - variables:
+        current_session: '{{ [as_timestamp(states.input_boolean.bbq_probe_3_enabled.last_changed), as_timestamp(states.input_text.inkbird_name_3.last_changed),
+          as_timestamp(states.input_number.inkbird_target_3.last_changed), as_timestamp(states.input_text.inkbird_sensor_prefix.last_changed)]
+          | join('':'') }}'
+    - condition: template
+      value_template: '{{ current_session == session_at_start and is_state(''sensor.bbq_probe_3_status'', ''ready'')
+        and is_state(''input_boolean.bbq_probe_3_enabled'', ''on'') }}'
+    - variables:
+        pname: '{{ states(''input_text.inkbird_name_3'') }}'
+        ptemp: '{{ states(''sensor.bbq_probe_3_control_temperature'') | float(0) | round(1) }}'
+        italian: '{{ is_state(''input_select.bbq_language'', ''Italiano'') }}'
+    - action: script.bbq_notify
+      data:
+        title: '{{ ''BBQ: promemoria'' if italian else ''BBQ: reminder'' }}'
+        message: '{{ pname }}: {{ minutes }} {{ ''minuti dalla soglia HA. Verifica la cottura.'' if italian else
+          ''minutes since reaching the HA target. Check the cook.'' }}'
+        tag: inkbird_rest_3
+  bbq_snooze_4:
+    alias: BBQ probe 4 snooze
+    mode: restart
+    sequence:
+    - variables:
+        session_at_start: '{{ [as_timestamp(states.input_boolean.bbq_probe_4_enabled.last_changed), as_timestamp(states.input_text.inkbird_name_4.last_changed),
+          as_timestamp(states.input_number.inkbird_target_4.last_changed), as_timestamp(states.input_text.inkbird_sensor_prefix.last_changed)]
+          | join('':'') }}'
+        minutes: '{{ states(''input_number.bbq_snooze_minutes'') | int(0) }}'
+    - condition: template
+      value_template: '{{ minutes > 0 }}'
+    - delay:
+        minutes: '{{ minutes }}'
+    - variables:
+        current_session: '{{ [as_timestamp(states.input_boolean.bbq_probe_4_enabled.last_changed), as_timestamp(states.input_text.inkbird_name_4.last_changed),
+          as_timestamp(states.input_number.inkbird_target_4.last_changed), as_timestamp(states.input_text.inkbird_sensor_prefix.last_changed)]
+          | join('':'') }}'
+    - condition: template
+      value_template: '{{ current_session == session_at_start and is_state(''sensor.bbq_probe_4_status'', ''ready'')
+        and is_state(''input_boolean.bbq_probe_4_enabled'', ''on'') }}'
+    - variables:
+        pname: '{{ states(''input_text.inkbird_name_4'') }}'
+        ptemp: '{{ states(''sensor.bbq_probe_4_control_temperature'') | float(0) | round(1) }}'
+        italian: '{{ is_state(''input_select.bbq_language'', ''Italiano'') }}'
+    - action: script.bbq_notify
+      data:
+        title: '{{ ''BBQ: promemoria'' if italian else ''BBQ: reminder'' }}'
+        message: '{{ pname }}: {{ ''soglia ancora raggiunta'' if italian else ''still at the HA target'' }}. {{
+          ptemp }} {{ ''gradi'' if italian else ''degrees'' }}.'
+        tag: inkbird_ready_4
+  bbq_rest_4:
+    alias: BBQ probe 4 rest
+    mode: restart
+    sequence:
+    - variables:
+        session_at_start: '{{ [as_timestamp(states.input_boolean.bbq_probe_4_enabled.last_changed), as_timestamp(states.input_text.inkbird_name_4.last_changed),
+          as_timestamp(states.input_number.inkbird_target_4.last_changed), as_timestamp(states.input_text.inkbird_sensor_prefix.last_changed)]
+          | join('':'') }}'
+        minutes: '{{ states(''input_number.bbq_rest_minutes'') | int(0) }}'
+    - condition: template
+      value_template: '{{ minutes > 0 }}'
+    - delay:
+        minutes: '{{ minutes }}'
+    - variables:
+        current_session: '{{ [as_timestamp(states.input_boolean.bbq_probe_4_enabled.last_changed), as_timestamp(states.input_text.inkbird_name_4.last_changed),
+          as_timestamp(states.input_number.inkbird_target_4.last_changed), as_timestamp(states.input_text.inkbird_sensor_prefix.last_changed)]
+          | join('':'') }}'
+    - condition: template
+      value_template: '{{ current_session == session_at_start and is_state(''sensor.bbq_probe_4_status'', ''ready'')
+        and is_state(''input_boolean.bbq_probe_4_enabled'', ''on'') }}'
+    - variables:
+        pname: '{{ states(''input_text.inkbird_name_4'') }}'
+        ptemp: '{{ states(''sensor.bbq_probe_4_control_temperature'') | float(0) | round(1) }}'
+        italian: '{{ is_state(''input_select.bbq_language'', ''Italiano'') }}'
+    - action: script.bbq_notify
+      data:
+        title: '{{ ''BBQ: promemoria'' if italian else ''BBQ: reminder'' }}'
+        message: '{{ pname }}: {{ minutes }} {{ ''minuti dalla soglia HA. Verifica la cottura.'' if italian else
+          ''minutes since reaching the HA target. Check the cook.'' }}'
+        tag: inkbird_rest_4
+automation:
+- id: inkbird_bbq_probe_reached_target
+  alias: BBQ probe reached target
+  description: Notifies when a BBQ probe reaches its target temperature.
+  triggers:
+  - trigger: state
+    entity_id: sensor.bbq_probe_1_status
+    to: ready
+    for: 00:00:30
+    id: '1'
+  - trigger: state
+    entity_id: sensor.bbq_probe_2_status
+    to: ready
+    for: 00:00:30
+    id: '2'
+  - trigger: state
+    entity_id: sensor.bbq_probe_3_status
+    to: ready
+    for: 00:00:30
+    id: '3'
+  - trigger: state
+    entity_id: sensor.bbq_probe_4_status
+    to: ready
+    for: 00:00:30
+    id: '4'
+  actions:
+  - variables:
+      prefix: |
+        {% set p = states('input_text.inkbird_sensor_prefix') %} {{ p if p not in ['unknown', 'unavailable', ''] else 'sensor.' ~ 'inkbird_example' }}
+      idx: '{{ trigger.id }}'
+      snooze: '{{ states(''input_number.bbq_snooze_minutes'') | int(10) }}'
+      pname: '{{ states(''input_text.inkbird_name_'' ~ trigger.id) }}'
+      ptemp: '{{ states(''sensor.bbq_probe_'' ~ trigger.id ~ ''_control_temperature'') | float(0) | round(1) }}'
+      ptarget: '{{ states(''input_number.inkbird_target_'' ~ trigger.id) | float(0) | round(0) }}'
+      italian: '{{ is_state(''input_select.bbq_language'', ''Italiano'') }}'
+  - action: input_text.set_value
+    target:
+      entity_id: '{{ ''input_text.bbq_last_alert_'' ~ trigger.id }}'
+    data:
+      value: '{{ session_key }}'
+  - event: inkbird_bbq_target_reached
+    event_data:
+      probe: '{{ trigger.id | int }}'
+  - action: script.bbq_notify
+    data:
+      title: 'BBQ: {{ pname }}, {{ ''soglia raggiunta'' if italian else ''HA target reached'' }}'
+      message: '{{ ''Sonda'' if italian else ''Probe'' }} {{ idx }}: {{ ptemp }} C. {{ ''Soglia HA'' if italian
+        else ''HA target'' }} {{ ptarget }} C.'
+      tts_message: '{{ pname }}. {{ ''Soglia raggiunta. La sonda misura'' if italian else ''HA target reached. Probe
+        temperature is'' }} {{ ptemp }} {{ ''gradi Celsius'' if italian else ''degrees Celsius'' }}.'
+      tag: inkbird_ready_{{ idx }}
+      actions:
+      - action: BBQ_SNOOZE_{{ idx }}
+        title: Snooze {{ snooze }} min
+      - action: BBQ_DISMISS_{{ idx }}
+        title: Dismiss
+  mode: parallel
+  conditions:
+  - condition: template
+    value_template: '{{ is_state(''input_boolean.bbq_probe_'' ~ trigger.id ~ ''_enabled'', ''on'') and is_state(''sensor.bbq_probe_''
+      ~ trigger.id ~ ''_status'', ''ready'') }}'
+  - condition: template
+    value_template: '{{ states(''input_text.bbq_last_alert_'' ~ trigger.id) != session_key }}'
+  variables:
+    session_key: '{{ [as_timestamp(states[''input_boolean.bbq_probe_'' ~ trigger.id ~ ''_enabled''].last_changed),
+      as_timestamp(states[''input_text.inkbird_name_'' ~ trigger.id].last_changed), as_timestamp(states[''input_number.inkbird_target_''
+      ~ trigger.id].last_changed), as_timestamp(states.input_text.inkbird_sensor_prefix.last_changed)] | join('':'')
+      }}'
+- id: inkbird_bbq_rest_reminder
+  alias: BBQ rest reminder
+  description: Optional reminder measured from the HA target, not from removal from heat.
+  triggers:
+  - trigger: event
+    event_type: inkbird_bbq_target_reached
+    event_data:
+      probe: 1
+    id: '1'
+  - trigger: event
+    event_type: inkbird_bbq_target_reached
+    event_data:
+      probe: 2
+    id: '2'
+  - trigger: event
+    event_type: inkbird_bbq_target_reached
+    event_data:
+      probe: 3
+    id: '3'
+  - trigger: event
+    event_type: inkbird_bbq_target_reached
+    event_data:
+      probe: 4
+    id: '4'
+  conditions:
+  - condition: numeric_state
+    entity_id: input_number.bbq_rest_minutes
+    above: 0
+  - condition: template
+    value_template: '{{ is_state(''input_boolean.bbq_probe_'' ~ trigger.id ~ ''_enabled'', ''on'') }}'
+  actions:
+  - action: script.turn_on
+    target:
+      entity_id: '{{ ''script.bbq_rest_'' ~ trigger.id }}'
+  mode: parallel
+- id: inkbird_bbq_probe_battery_low
+  alias: BBQ probe battery low
+  description: |
+    Warns when a probe battery drops below the threshold set on the dashboard's Settings page. Toggled by input_boolean.bbq_battery_alerts.
+  triggers:
+  - trigger: template
+    value_template: |-
+      {% set p = states('input_text.inkbird_sensor_prefix') %}
+      {% set b = states(p ~ '_probe_1_battery') | float(none) %}
+      {{ b is not none and b >= 0 and b < states('input_number.bbq_battery_threshold') | float(0) and is_state('input_boolean.bbq_battery_alerts', 'on') and is_state('input_boolean.bbq_probe_1_enabled', 'on') and states('sensor.bbq_probe_1_status') in ['heating','close','ready'] and not is_state(p | replace('sensor.', 'binary_sensor.') ~ '_probe_battery_report_suspect', 'on') }}
+    id: '1'
+  - trigger: template
+    value_template: |-
+      {% set p = states('input_text.inkbird_sensor_prefix') %}
+      {% set b = states(p ~ '_probe_2_battery') | float(none) %}
+      {{ b is not none and b >= 0 and b < states('input_number.bbq_battery_threshold') | float(0) and is_state('input_boolean.bbq_battery_alerts', 'on') and is_state('input_boolean.bbq_probe_2_enabled', 'on') and states('sensor.bbq_probe_2_status') in ['heating','close','ready'] and not is_state(p | replace('sensor.', 'binary_sensor.') ~ '_probe_battery_report_suspect', 'on') }}
+    id: '2'
+  - trigger: template
+    value_template: |-
+      {% set p = states('input_text.inkbird_sensor_prefix') %}
+      {% set b = states(p ~ '_probe_3_battery') | float(none) %}
+      {{ b is not none and b >= 0 and b < states('input_number.bbq_battery_threshold') | float(0) and is_state('input_boolean.bbq_battery_alerts', 'on') and is_state('input_boolean.bbq_probe_3_enabled', 'on') and states('sensor.bbq_probe_3_status') in ['heating','close','ready'] and not is_state(p | replace('sensor.', 'binary_sensor.') ~ '_probe_battery_report_suspect', 'on') }}
+    id: '3'
+  - trigger: template
+    value_template: |-
+      {% set p = states('input_text.inkbird_sensor_prefix') %}
+      {% set b = states(p ~ '_probe_4_battery') | float(none) %}
+      {{ b is not none and b >= 0 and b < states('input_number.bbq_battery_threshold') | float(0) and is_state('input_boolean.bbq_battery_alerts', 'on') and is_state('input_boolean.bbq_probe_4_enabled', 'on') and states('sensor.bbq_probe_4_status') in ['heating','close','ready'] and not is_state(p | replace('sensor.', 'binary_sensor.') ~ '_probe_battery_report_suspect', 'on') }}
+    id: '4'
+  conditions:
+  - condition: state
+    entity_id: input_boolean.bbq_battery_alerts
+    state: 'on'
+  - condition: template
+    value_template: '{{ is_state(''input_boolean.bbq_probe_'' ~ trigger.id ~ ''_enabled'', ''on'') }}'
+  actions:
+  - variables:
+      idx: '{{ trigger.id }}'
+      pname: '{{ states(''input_text.inkbird_name_'' ~ trigger.id) }}'
+      pct: |
+        {% set p = states('input_text.inkbird_sensor_prefix') %} {% set p = p if p not in ['unknown', 'unavailable', ''] else 'sensor.' ~ 'inkbird_example' %} {{ states(p ~ '_probe_' ~ trigger.id ~ '_battery') }}
+  - action: script.bbq_notify
+    data:
+      title: 🪫 Probe {{ idx }} battery low
+      message: '{{ pname }} is at {{ pct }}%. Swap or charge the probe before it quits mid-cook.'
+      tts_message: Warning. The battery on probe {{ idx }} is at {{ pct }} percent.
+      tag: inkbird_battery_{{ idx }}
+  mode: parallel
+- id: inkbird_bbq_probe_stalled
+  alias: BBQ probe stalled
+  description: |
+    Fires when a probe's rate of change sits between -1 and +1 °C/h for 45 minutes while still below target. Toggled by input_boolean.bbq_stall_alerts.
+  triggers:
+  - trigger: template
+    id: '1'
+    for: 00:45:00
+    value_template: |-
+      {% set rate = states('sensor.bbq_probe_1_rate') | float(none) %}
+      {{ rate is not none and -1 < rate < 1 and is_state('input_boolean.bbq_stall_alerts', 'on') and is_state('sensor.bbq_probe_1_status', 'heating') and is_state('input_boolean.bbq_probe_1_enabled', 'on') }}
+  - trigger: template
+    id: '2'
+    for: 00:45:00
+    value_template: |-
+      {% set rate = states('sensor.bbq_probe_2_rate') | float(none) %}
+      {{ rate is not none and -1 < rate < 1 and is_state('input_boolean.bbq_stall_alerts', 'on') and is_state('sensor.bbq_probe_2_status', 'heating') and is_state('input_boolean.bbq_probe_2_enabled', 'on') }}
+  - trigger: template
+    id: '3'
+    for: 00:45:00
+    value_template: |-
+      {% set rate = states('sensor.bbq_probe_3_rate') | float(none) %}
+      {{ rate is not none and -1 < rate < 1 and is_state('input_boolean.bbq_stall_alerts', 'on') and is_state('sensor.bbq_probe_3_status', 'heating') and is_state('input_boolean.bbq_probe_3_enabled', 'on') }}
+  - trigger: template
+    id: '4'
+    for: 00:45:00
+    value_template: |-
+      {% set rate = states('sensor.bbq_probe_4_rate') | float(none) %}
+      {{ rate is not none and -1 < rate < 1 and is_state('input_boolean.bbq_stall_alerts', 'on') and is_state('sensor.bbq_probe_4_status', 'heating') and is_state('input_boolean.bbq_probe_4_enabled', 'on') }}
+  conditions:
+  - condition: state
+    entity_id: input_boolean.bbq_stall_alerts
+    state: 'on'
+  - condition: template
+    value_template: '{{ is_state(''sensor.bbq_probe_'' ~ trigger.id ~ ''_status'', ''heating'') }}'
+  - condition: template
+    value_template: '{{ is_state(''input_boolean.bbq_probe_'' ~ trigger.id ~ ''_enabled'', ''on'') }}'
+  actions:
+  - variables:
+      prefix: |
+        {% set p = states('input_text.inkbird_sensor_prefix') %} {{ p if p not in ['unknown', 'unavailable', ''] else 'sensor.' ~ 'inkbird_example' }}
+      idx: '{{ trigger.id }}'
+      pname: '{{ states(''input_text.inkbird_name_'' ~ trigger.id) }}'
+      ptemp: '{{ states(''sensor.bbq_probe_'' ~ trigger.id ~ ''_control_temperature'') | round(1) }}'
+      ptarget: '{{ states(''input_number.inkbird_target_'' ~ trigger.id) | round(0) }}'
+  - action: script.bbq_notify
+    data:
+      title: 'BBQ: {{ pname }}, slow temperature change'
+      message: Probe {{ idx }} has changed by less than 1 C/hour for 45 minutes while below its HA target. Check
+        the cook.
+      tts_message: '{{ pname }}. Slow temperature change. Check the cook.'
+      tag: inkbird_stall_{{ idx }}
+  mode: parallel
+- id: inkbird_bbq_sync_media_targets
+  alias: BBQ sync media targets
+  description: |
+    Refills input_select.bbq_tts_speaker / _engine from the media_player and tts entities that currently exist. Runs at startup and hourly.
+  triggers:
+  - trigger: homeassistant
+    event: start
+  - trigger: time_pattern
+    hours: /1
+  actions:
+  - action: script.bbq_refresh_media_targets
+  mode: single
+- id: inkbird_bbq_notification_action
+  alias: BBQ notification action
+  description: Handles the Snooze / Dismiss buttons on a BBQ notification.
+  triggers:
+  - trigger: event
+    event_type: mobile_app_notification_action
+  conditions:
+  - condition: template
+    value_template: '{{ trigger.event.data.action | default('''') is string and trigger.event.data.action | default('''')
+      | regex_match(''^BBQ_(SNOOZE|DISMISS)_[1-4]$'') }}'
+  actions:
+  - variables:
+      prefix: |
+        {% set p = states('input_text.inkbird_sensor_prefix') %} {{ p if p not in ['unknown', 'unavailable', ''] else 'sensor.' ~ 'inkbird_example' }}
+      parts: '{{ trigger.event.data.action.split(''_'') }}'
+      kind: '{{ parts[1] }}'
+      idx: '{{ parts[2] }}'
+      notify_target: |
+        {% set configured = states('input_text.bbq_notify_service') %} {{ configured if configured not in ['unknown', 'unavailable', '']
+           else states('input_select.bbq_notify_target') }}
+  - action: persistent_notification.dismiss
+    data:
+      notification_id: inkbird_ready_{{ idx }}
+  - if:
+    - condition: template
+      value_template: |
+        {{ notify_target.startswith('mobile_app_')
+           and notify_target | regex_match('^[a-z0-9_]+$') }}
+    then:
+    - action: '{{ ''notify.'' ~ notify_target }}'
+      continue_on_error: true
+      data:
+        message: clear_notification
+        data:
+          tag: inkbird_ready_{{ idx }}
+  - choose:
+    - conditions: '{{ kind == ''SNOOZE'' and is_state(''sensor.bbq_probe_'' ~ idx ~ ''_status'', ''ready'') }}'
+      sequence:
+      - action: script.turn_on
+        target:
+          entity_id: '{{ ''script.bbq_snooze_'' ~ idx }}'
+    default:
+    - action: script.turn_off
+      target:
+        entity_id: '{{ [''script.bbq_snooze_'' ~ idx, ''script.bbq_rest_'' ~ idx] }}'
+  mode: queued
+  max: 20
+- id: inkbird_bbq_cancel_pending
+  alias: BBQ cancel pending reminders
+  mode: queued
+  max: 30
+  triggers:
+  - trigger: state
+    entity_id:
+    - input_boolean.bbq_probe_1_enabled
+    - input_text.inkbird_name_1
+    - input_number.inkbird_target_1
+    id: '1'
+  - trigger: state
+    entity_id: sensor.bbq_probe_1_status
+    from: ready
+    id: '1'
+  - trigger: state
+    entity_id:
+    - input_boolean.bbq_probe_2_enabled
+    - input_text.inkbird_name_2
+    - input_number.inkbird_target_2
+    id: '2'
+  - trigger: state
+    entity_id: sensor.bbq_probe_2_status
+    from: ready
+    id: '2'
+  - trigger: state
+    entity_id:
+    - input_boolean.bbq_probe_3_enabled
+    - input_text.inkbird_name_3
+    - input_number.inkbird_target_3
+    id: '3'
+  - trigger: state
+    entity_id: sensor.bbq_probe_3_status
+    from: ready
+    id: '3'
+  - trigger: state
+    entity_id:
+    - input_boolean.bbq_probe_4_enabled
+    - input_text.inkbird_name_4
+    - input_number.inkbird_target_4
+    id: '4'
+  - trigger: state
+    entity_id: sensor.bbq_probe_4_status
+    from: ready
+    id: '4'
+  - trigger: state
+    entity_id: input_text.inkbird_sensor_prefix
+    id: all
+  actions:
+  - action: script.turn_off
+    target:
+      entity_id: '{{ [''script.bbq_snooze_1'', ''script.bbq_rest_1'', ''script.bbq_snooze_2'', ''script.bbq_rest_2'',
+        ''script.bbq_snooze_3'', ''script.bbq_rest_3'', ''script.bbq_snooze_4'', ''script.bbq_rest_4''] if trigger.id
+        == ''all'' else [''script.bbq_snooze_'' ~ trigger.id, ''script.bbq_rest_'' ~ trigger.id] }}'

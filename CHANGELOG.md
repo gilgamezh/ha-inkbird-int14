@@ -1,6 +1,12 @@
 # Changelog
 
-## Unreleased
+## 0.2.10
+
+- Add optional Inkbird INT Cook Control for one INT-14-BW: single-prefix discovery/setup, English/Italian core labels, two-sensor probe diagrams, responsive controls and real HA screenshots.
+- Add native Alexa Media Player announcements and optional silent TV popups, with no volume/input changes. A controlled HA threshold crossing was physically confirmed on Echo and LG webOS.
+- Guard target alerts against stale data and reconnect duplicates; make Snooze/Dismiss and cook changes cancel pending reminders. Verify real five-minute timers and add automated regression coverage.
+- Include a separate Cook Control ZIP, bilingual installation/rollback guides and a deterministic bundle builder. HACS installs the integration only; Cook Control is an optional manual setup. Thermometer runtime and model support are unchanged; only the integration manifest version is bumped.
+- Add verified Buy Me a Coffee and GitHub Sponsors buttons near the top of the GitHub/HACS page, and include both options in the repository funding links. Documentation-only change.
 
 ## 0.2.9
 
