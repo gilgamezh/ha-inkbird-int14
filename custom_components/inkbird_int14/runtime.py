@@ -32,6 +32,7 @@ from .models import (
     AUTH_MODE_SCAN_ONLY,
     DEFAULT_MODEL,
     MODEL_INT11I_B,
+    MODEL_INT12_BW,
     MODEL_INT12E_BW,
     MODEL_INT14S_BW,
     InkbirdIntModelProfile,
@@ -59,6 +60,7 @@ from .protocol import (
     parse_cloud_dps,
     parse_int11i_battery_payload,
     parse_int11i_temperature_payload,
+    parse_int12_bw_temperature_payload,
     parse_int14s_lan_dps,
     parse_int14s_lan_target_dp_value,
     parse_multisensor_temperature_payload,
@@ -1388,6 +1390,14 @@ class Int14Runtime:
                         **battery,
                     }
                 )
+        elif self.profile.key == MODEL_INT12_BW and "ff01" in sender_text:
+            current = parse_int12_bw_temperature_payload(raw)
+            if current:
+                parsed["frames"].append({"name": "current_temp_candidate", "transport": "raw_ff01_int12_bw", **current})
+        elif self.profile.key == MODEL_INT12_BW and "2a19" in sender_text:
+            battery = parse_battery_payload(raw, self.profile.physical_probe_count)
+            if battery:
+                parsed["frames"].append({"name": "battery_candidate", "transport": "raw_2a19_int12_bw", "raw_hex": raw.hex(), **battery})
         elif self.profile.key == MODEL_INT11I_B and "ff01" in sender_text:
             current = parse_int11i_temperature_payload(raw)
             if current:
@@ -1396,6 +1406,9 @@ class Int14Runtime:
             battery = parse_int11i_battery_payload(raw)
             if battery:
                 parsed["frames"].append({"name": "battery_candidate", "transport": "raw_2a19_int11i", "raw_hex": raw.hex(), **battery})
+        if self.profile.key == MODEL_INT12_BW and "2a19" not in sender_text:
+            # INT-12-BW reports batteries on GATT 2A19 only; FF02 opcode 0x03 frames use another layout.
+            parsed["frames"] = [frame for frame in parsed["frames"] if frame.get("name") != "battery_candidate"]
         self.data["last_raw_hex"] = parsed["raw_hex"]
         for frame in parsed["frames"]:
             self._apply_frame(frame, live_allowed=True)

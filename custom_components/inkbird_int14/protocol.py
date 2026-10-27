@@ -584,6 +584,46 @@ def parse_int11i_temperature_payload(raw: bytes) -> dict[str, Any] | None:
     }
 
 
+def _c_tenths_or_sentinel_to_f_tenths(value: int) -> int:
+    return abs(value) if abs(value) in SENTINELS else c_tenths_to_f_tenths(value)
+
+
+def parse_int12_bw_temperature_payload(raw: bytes) -> dict[str, Any] | None:
+    """Decode the 10-byte INT-12-BW FF01 frame from a community capture (issue #7).
+
+    Probe 1 sends internal and ambient as little-endian int16 Celsius tenths
+    (0x7FFE while docked). Probe 2 sends internal as int16 Celsius tenths at
+    bytes 5-6, framed by two whole-Celsius bytes; byte 7 tracks the handle end
+    and is mapped as ambient, byte 4 is kept unmapped. The station temperature
+    is a little-endian uint16 in Fahrenheit tenths, as on INT-14-BW.
+    """
+    if len(raw) != 10:
+        return None
+    probe_1_internal = le_i16(raw[0:2])
+    probe_1_ambient = le_i16(raw[2:4])
+    probe_2_internal = le_i16(raw[5:7])
+    probe_2_docked = abs(probe_2_internal) in SENTINELS
+    probe_2_ambient = 32766 if probe_2_docked else signed_i8(raw[7]) * 10
+    base_temp = int.from_bytes(raw[8:10], "little", signed=False)
+    return {
+        "probes": [
+            {
+                "probe": 1,
+                "internal_f_tenths": _c_tenths_or_sentinel_to_f_tenths(probe_1_internal),
+                "ambient_f_tenths": _c_tenths_or_sentinel_to_f_tenths(probe_1_ambient),
+            },
+            {
+                "probe": 2,
+                "internal_f_tenths": _c_tenths_or_sentinel_to_f_tenths(probe_2_internal),
+                "ambient_f_tenths": _c_tenths_or_sentinel_to_f_tenths(probe_2_ambient),
+                "unmapped_c": None if probe_2_docked else signed_i8(raw[4]),
+            },
+        ],
+        "base_temp_raw": base_temp,
+        "base_temp_f_tenths": None if base_temp in SENTINELS or base_temp >= 1310 else base_temp,
+    }
+
+
 def parse_battery_payload(raw: bytes, probe_count: int = 4) -> dict[str, Any] | None:
     if probe_count < 1 or len(raw) < probe_count + 1:
         return None
